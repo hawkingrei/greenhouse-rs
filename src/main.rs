@@ -3,6 +3,9 @@
 
 #[macro_use]
 pub mod compression;
+pub mod util;
+
+extern crate rand;
 
 #[macro_use]
 extern crate quick_error;

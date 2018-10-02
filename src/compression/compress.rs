@@ -204,8 +204,8 @@ impl Codec for ZSTDCodec {
 
 #[cfg(test)]
 mod tests {
+    use super::super::super::util::test_common::*;
     use super::*;
-    use util::test_common::*;
 
     fn test_roundtrip(c: CodecType, data: &Vec<u8>) {
         let mut c1 = create_codec(c).unwrap().unwrap();
