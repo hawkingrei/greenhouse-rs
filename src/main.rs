@@ -1,8 +1,18 @@
 #![feature(plugin)]
 #![plugin(rocket_codegen)]
 
+#[macro_use]
+pub mod compression;
+
+#[macro_use]
+extern crate quick_error;
+extern crate brotli;
 extern crate clap;
+extern crate flate2;
+extern crate lz4;
 extern crate rocket;
+extern crate snap;
+extern crate zstd;
 
 use clap::{App, Arg};
 use rocket::config::{Config, Environment};
