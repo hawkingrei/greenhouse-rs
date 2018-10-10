@@ -21,15 +21,11 @@ use clap::{App, Arg};
 use rocket::config::{Config, Environment};
 use rocket::http::uri::URI;
 use rocket::Data;
+use std::io;
 
-#[get("/")]
-fn index() -> &'static str {
-    "Hello, world!"
-}
-
-#[put("/", data = "<paste>")]
-fn upload(paste: Data, uri: &URI) -> &'static str {
-    "Hello, world!"
+#[put("/...", data = "<paste>")]
+fn upload(paste: Data, uri: &URI) -> io::Result<String> {
+    return Ok(uri.as_str().to_string());
 }
 
 fn main() {
@@ -82,6 +78,6 @@ fn main() {
         .finalize()
         .unwrap();
     rocket::custom(config, false)
-        .mount("/", routes![index, upload])
+        .mount("/", routes![upload])
         .launch();
 }
