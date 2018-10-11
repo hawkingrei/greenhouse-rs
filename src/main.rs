@@ -33,45 +33,34 @@ fn main() {
         .author("hawkingrei <hawkingrei@gmail.com>")
         .arg(
             Arg::with_name("dir")
+                .long("dir")
                 .takes_value(true)
-                .value_name("DIR")
+                .required(true)
                 .help("location to store cache entries on disk"),
         )
         .arg(
             Arg::with_name("host")
+                .long("host")
                 .takes_value(true)
-                .value_name("HOST")
-                .help("host address to listen on")
-        )
-        .arg(Arg::with_name("cache-port").takes_value(true).value_name("cachePort").help("port to listen on for cache requests"))
-        .arg(Arg::with_name("metrics-port").takes_value(true).value_name("metricsPort").help("port to listen on for prometheus metrics scraping"))
-        .arg(Arg::with_name("metrics-update-interval").takes_value(true).value_name("metricsUpdateInterval").help("interval between updating disk metrics"))
-        .arg(
-            Arg::with_name("min-percent-blocks-free")
-                .takes_value(true)
-                .value_name("minPercentBlocksFree")
-                .help("minimum percent of blocks free on --dir's disk before evicting entries"),
+                .help("host address to listen on"),
         )
         .arg(
-            Arg::with_name("evict-until-percent-blocks-free")
+            Arg::with_name("cache-port")
+                .long("cache-port")
                 .takes_value(true)
-                .value_name("evictUntilPercentBlocksFree")
-                .help("continue evicting from the cache until at least this percent of blocks are free"),
-        )
-        .arg(
-            Arg::with_name("disk-check-interval")
-                .takes_value(true)
-                .value_name("diskCheckInterval")
-                .help("interval between checking disk usage (and potentially evicting entries"),
+                .help("port to listen on for cache requests"),
         )
         .get_matches();
-    let _dir = matches.value_of("DIR").unwrap();
-    let _host = matches.value_of("HOST").unwrap_or("0.0.0.0");
+    let _dir = matches.value_of("dir").unwrap();
+    println!("dir was passed in: {}", _dir);
+    let _host = matches.value_of("host").unwrap_or("0.0.0.0");
+    println!("host was passed in: {}", _host);
     let _cache_port = matches
         .value_of("cachePort")
         .unwrap_or("8888")
         .parse::<u16>()
         .unwrap();
+    println!("port was passed in: {}", _cache_port);
     let config = Config::build(Environment::Staging)
         .address(_host)
         .port(_cache_port)
