@@ -22,10 +22,11 @@ use rocket::config::{Config, Environment};
 use rocket::http::uri::URI;
 use rocket::Data;
 use std::io;
+use std::path::PathBuf;
 
-#[put("/...", data = "<paste>")]
-fn upload(paste: Data, uri: &URI) -> io::Result<String> {
-    return Ok(uri.as_str().to_string());
+#[put("/<file..>", data = "<paste>")]
+fn upload(paste: Data, file: PathBuf) -> io::Result<String> {
+    return Ok(file.to_str().unwrap().to_string());
 }
 
 fn main() {
