@@ -20,11 +20,11 @@ extern crate zstd;
 
 use clap::{App, Arg};
 use rocket::config::{Config, Environment};
-use rocket::fairing::AdHoc;
 use rocket::http::uri::URI;
-use rocket::request::State;
 use rocket::Data;
+use std::fs::File;
 use std::io;
+use std::io::prelude::*;
 use std::path::PathBuf;
 
 struct Dir {
@@ -33,8 +33,18 @@ struct Dir {
 
 #[put("/<file..>", data = "<paste>")]
 fn upload(paste: Data, file: PathBuf, store: State<Dir>) -> io::Result<String> {
-    let result = format!("{}/{}", store.dir, file.to_str().unwrap().to_string());
-    return Ok(result);
+    let path = format!("{}/{}", store.dir, file.to_str().unwrap().to_string());
+    let mut result: &mut Vec<u8> = &mut Vec::new();
+
+    let mut encoder = zstd::stream::Encoder::new(&mut result, 5).unwrap();
+    paste.stream_to(&mut encoder).unwrap();
+    encoder.finish().unwrap();
+    let mut f = File::create(path.clone())?;
+    f.write_all(&mut result)?;
+
+    f.sync_data()?;
+
+    return Ok(path);
 }
 
 fn main() {
