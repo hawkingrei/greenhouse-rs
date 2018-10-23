@@ -19,8 +19,8 @@ extern crate zstd;
 
 use clap::{App, Arg};
 use rocket::config::{Config, Environment};
-use rocket::http::uri::URI;
 use rocket::Data;
+use rocket::State;
 use std::fs::File;
 use std::io;
 use std::path::PathBuf;
@@ -29,8 +29,9 @@ use std::path::PathBuf;
 pub struct CachePath(String);
 
 #[put("/<file..>", data = "<paste>")]
-fn upload(paste: Data, file: PathBuf) -> io::Result<String> {
-    let wfile = &mut File::create(file.to_str().unwrap().to_string())?;
+fn upload(paste: Data, file: PathBuf, path: State<CachePath>) -> io::Result<String> {
+    let together = format!("{}/{}", path.0, file.to_str().unwrap().to_string());
+    let wfile = &mut File::create(together)?;
     let mut encoder = zstd::stream::Encoder::new(wfile, 5).unwrap();
     io::copy(&mut paste.open(), &mut encoder).unwrap();
     encoder.finish().unwrap();
