@@ -20,18 +20,21 @@ extern crate zstd;
 
 use clap::{App, Arg};
 use rocket::config::{Config, Environment};
+use rocket::response::NamedFile;
 use rocket::Data;
-<<<<<<< HEAD
 use rocket::State;
-=======
->>>>>>> 2698b78c7605985389990479c2f8b2d9b0b7c248
 use std::fs::File;
 use std::io;
-use std::io::prelude::*;
+use std::path::Path;
 use std::path::PathBuf;
 
 #[derive(Clone)]
 pub struct CachePath(String);
+
+#[put("/<file..>")]
+fn get(file: PathBuf, path: State<CachePath>) -> Option<NamedFile> {
+    NamedFile::open(Path::new(&path.0).join(file)).ok()
+}
 
 #[put("/<file..>", data = "<paste>")]
 fn upload(paste: Data, file: PathBuf, path: State<CachePath>) -> io::Result<String> {
@@ -81,8 +84,7 @@ fn main() {
         .finalize()
         .unwrap();
     rocket::custom(config, false)
-        .manage(Dir { dir: _dir })
-        .mount("/", routes![upload])
         .manage(CachePath(_dir.to_string()))
+        .mount("/", routes![upload])
         .launch();
 }
