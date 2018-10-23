@@ -1,4 +1,5 @@
 #![feature(plugin)]
+#![feature(type_ascription)]
 #![plugin(rocket_codegen)]
 
 #[macro_use]
@@ -20,9 +21,13 @@ extern crate zstd;
 use clap::{App, Arg};
 use rocket::config::{Config, Environment};
 use rocket::Data;
+<<<<<<< HEAD
 use rocket::State;
+=======
+>>>>>>> 2698b78c7605985389990479c2f8b2d9b0b7c248
 use std::fs::File;
 use std::io;
+use std::io::prelude::*;
 use std::path::PathBuf;
 
 #[derive(Clone)]
@@ -61,10 +66,9 @@ fn main() {
                 .help("port to listen on for cache requests"),
         )
         .get_matches();
-    let _dir = matches.value_of("dir").unwrap();
-    println!("dir was passed in: {}", _dir);
+    let _dir = matches.value_of("dir").unwrap().to_owned();
     let _host = matches.value_of("host").unwrap_or("0.0.0.0");
-    println!("host was passed in: {}", _host);
+
     let _cache_port = matches
         .value_of("cachePort")
         .unwrap_or("8888")
@@ -77,6 +81,7 @@ fn main() {
         .finalize()
         .unwrap();
     rocket::custom(config, false)
+        .manage(Dir { dir: _dir })
         .mount("/", routes![upload])
         .manage(CachePath(_dir.to_string()))
         .launch();
