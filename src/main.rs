@@ -21,11 +21,19 @@ use clap::{App, Arg};
 use rocket::config::{Config, Environment};
 use rocket::http::uri::URI;
 use rocket::Data;
+use std::fs::File;
 use std::io;
 use std::path::PathBuf;
 
+#[derive(Clone)]
+pub struct CachePath(String);
+
 #[put("/<file..>", data = "<paste>")]
 fn upload(paste: Data, file: PathBuf) -> io::Result<String> {
+    let wfile = &mut File::create(file.to_str().unwrap().to_string())?;
+    let mut encoder = zstd::stream::Encoder::new(wfile, 5).unwrap();
+    io::copy(&mut paste.open(), &mut encoder).unwrap();
+    encoder.finish().unwrap();
     return Ok(file.to_str().unwrap().to_string());
 }
 
@@ -69,5 +77,6 @@ fn main() {
         .unwrap();
     rocket::custom(config, false)
         .mount("/", routes![upload])
+        .manage(CachePath(_dir.to_string()))
         .launch();
 }
