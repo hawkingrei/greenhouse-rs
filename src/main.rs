@@ -4,6 +4,7 @@
 
 #[macro_use]
 pub mod compression;
+pub mod file;
 pub mod util;
 
 extern crate rand;
@@ -32,8 +33,8 @@ use std::path::PathBuf;
 pub struct CachePath(String);
 
 #[put("/<file..>")]
-fn get(file: PathBuf, path: State<CachePath>) -> Option<NamedFile> {
-    NamedFile::open(Path::new(&path.0).join(file)).ok()
+fn get(file: PathBuf, path: State<CachePath>) {
+    let f = &mut File::open(Path::new(&path.0).join(file));
 }
 
 #[put("/<file..>", data = "<paste>")]
