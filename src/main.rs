@@ -34,6 +34,7 @@ use sloggers::{
     types::Severity,
     Build,
 };
+use std::fs;
 use std::fs::File;
 use std::io;
 use std::path::Path;
@@ -44,10 +45,10 @@ pub struct CachePath(String);
 
 #[get("/<file..>")]
 fn get(file: PathBuf, path: State<CachePath>, logger: SyncLogger) -> Option<CacheFile> {
-    let together = format!("{}/{}", path.0, file.to_str().unwrap().to_string());
-    info!(logger.get(), "formatted: {}", together);
-    println!("{}", together);
-    CacheFile::open(Path::new(together.as_str())).ok()
+    //let together = format!("{}/{}", path.0, file.to_str().unwrap().to_string());
+    //info!(logger.get(), "formatted: {}", together);
+    //println!("{}", together);
+    CacheFile::open(Path::new(&path.0).join(file.to_str().unwrap().to_string())).ok()
 }
 
 #[put("/<file..>", data = "<paste>")]
@@ -57,9 +58,11 @@ fn upload(
     path: State<CachePath>,
     logger: SyncLogger,
 ) -> io::Result<String> {
-    let together = format!("{}/{}", path.0, file.to_str().unwrap().to_string());
-    info!(logger.get(), "formatted: {}", together);
-    println!("{}", together);
+    let together = Path::new(&path.0).join(file.to_str().unwrap().to_string());
+    if !together.parent().unwrap().exists() {
+        fs::create_dir_all(together.parent().unwrap())?
+    }
+    //info!(logger.get(), "formatted: {}", together);
     let wfile = &mut File::create(together)?;
     let mut encoder = zstd::stream::Encoder::new(wfile, 5).unwrap();
     io::copy(&mut paste.open(), &mut encoder).unwrap();
