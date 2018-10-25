@@ -16,14 +16,24 @@ extern crate clap;
 extern crate flate2;
 extern crate lz4;
 extern crate rocket;
+extern crate rocket_slog;
+extern crate sloggers;
 extern crate snap;
 extern crate zstd;
+#[macro_use(info)]
+extern crate slog;
 
+use self::file::CacheFile;
 use clap::{App, Arg};
 use rocket::config::{Config, Environment};
-use rocket::response::NamedFile;
 use rocket::Data;
 use rocket::State;
+use rocket_slog::{SlogFairing, SyncLogger};
+use sloggers::{
+    terminal::{Destination, TerminalLoggerBuilder},
+    types::Severity,
+    Build,
+};
 use std::fs::File;
 use std::io;
 use std::path::Path;
@@ -32,14 +42,24 @@ use std::path::PathBuf;
 #[derive(Clone)]
 pub struct CachePath(String);
 
-#[put("/<file..>")]
-fn get(file: PathBuf, path: State<CachePath>) {
-    let f = &mut File::open(Path::new(&path.0).join(file));
+#[get("/<file..>")]
+fn get(file: PathBuf, path: State<CachePath>, logger: SyncLogger) -> Option<CacheFile> {
+    let together = format!("{}/{}", path.0, file.to_str().unwrap().to_string());
+    info!(logger.get(), "formatted: {}", together);
+    println!("{}", together);
+    CacheFile::open(Path::new(together.as_str())).ok()
 }
 
 #[put("/<file..>", data = "<paste>")]
-fn upload(paste: Data, file: PathBuf, path: State<CachePath>) -> io::Result<String> {
+fn upload(
+    paste: Data,
+    file: PathBuf,
+    path: State<CachePath>,
+    logger: SyncLogger,
+) -> io::Result<String> {
     let together = format!("{}/{}", path.0, file.to_str().unwrap().to_string());
+    info!(logger.get(), "formatted: {}", together);
+    println!("{}", together);
     let wfile = &mut File::create(together)?;
     let mut encoder = zstd::stream::Encoder::new(wfile, 5).unwrap();
     io::copy(&mut paste.open(), &mut encoder).unwrap();
@@ -70,6 +90,13 @@ fn main() {
                 .help("port to listen on for cache requests"),
         )
         .get_matches();
+    let mut builder = TerminalLoggerBuilder::new();
+    builder.level(Severity::Debug);
+    builder.destination(Destination::Stderr);
+    let logger = builder.build().unwrap();
+
+    let fairing = SlogFairing::new(logger);
+
     let _dir = matches.value_of("dir").unwrap().to_owned();
     let _host = matches.value_of("host").unwrap_or("0.0.0.0");
 
@@ -85,7 +112,8 @@ fn main() {
         .finalize()
         .unwrap();
     rocket::custom(config, false)
+        .attach(fairing)
         .manage(CachePath(_dir.to_string()))
-        .mount("/", routes![upload])
+        .mount("/", routes![upload, get])
         .launch();
 }
