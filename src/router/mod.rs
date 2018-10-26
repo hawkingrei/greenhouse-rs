@@ -1,5 +1,5 @@
+use crate::config::CachePath;
 use crate::file::CacheFile;
-use crate::CachePath;
 use rocket::Data;
 use rocket::State;
 use rocket_slog::{SlogFairing, SyncLogger};

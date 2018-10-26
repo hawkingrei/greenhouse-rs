@@ -1,40 +1,20 @@
 #![feature(plugin)]
-#![feature(type_ascription)]
 #![plugin(rocket_codegen)]
 
-#[macro_use]
-pub mod compression;
-pub mod file;
-pub mod router;
-pub mod util;
-
-extern crate rand;
-
-#[macro_use]
-extern crate quick_error;
-extern crate brotli;
-extern crate clap;
-extern crate flate2;
-extern crate lz4;
+extern crate greenhouse;
 extern crate rocket;
-extern crate rocket_slog;
-extern crate sloggers;
-extern crate snap;
-extern crate zstd;
-#[macro_use(debug)]
-extern crate slog;
 
 use clap::{App, Arg};
 use rocket::config::{Config, Environment};
-use rocket_slog::{SlogFairing, SyncLogger};
+use rocket_slog::SlogFairing;
 use sloggers::{
     terminal::{Destination, TerminalLoggerBuilder},
     types::Severity,
     Build,
 };
 
-#[derive(Clone)]
-pub struct CachePath(String);
+use greenhouse::config::CachePath;
+use greenhouse::router;
 
 fn main() {
     let matches = App::new("greenhouse")
