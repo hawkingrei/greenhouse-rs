@@ -5,6 +5,7 @@
 #[macro_use]
 pub mod compression;
 pub mod file;
+pub mod router;
 pub mod util;
 
 extern crate rand;
@@ -20,55 +21,20 @@ extern crate rocket_slog;
 extern crate sloggers;
 extern crate snap;
 extern crate zstd;
-#[macro_use(info)]
+#[macro_use(debug)]
 extern crate slog;
 
-use self::file::CacheFile;
 use clap::{App, Arg};
 use rocket::config::{Config, Environment};
-use rocket::Data;
-use rocket::State;
 use rocket_slog::{SlogFairing, SyncLogger};
 use sloggers::{
     terminal::{Destination, TerminalLoggerBuilder},
     types::Severity,
     Build,
 };
-use std::fs;
-use std::fs::File;
-use std::io;
-use std::path::Path;
-use std::path::PathBuf;
 
 #[derive(Clone)]
 pub struct CachePath(String);
-
-#[get("/<file..>")]
-fn get(file: PathBuf, path: State<CachePath>, logger: SyncLogger) -> Option<CacheFile> {
-    //let together = format!("{}/{}", path.0, file.to_str().unwrap().to_string());
-    //info!(logger.get(), "formatted: {}", together);
-    //println!("{}", together);
-    CacheFile::open(Path::new(&path.0).join(file.to_str().unwrap().to_string())).ok()
-}
-
-#[put("/<file..>", data = "<paste>")]
-fn upload(
-    paste: Data,
-    file: PathBuf,
-    path: State<CachePath>,
-    logger: SyncLogger,
-) -> io::Result<String> {
-    let together = Path::new(&path.0).join(file.to_str().unwrap().to_string());
-    if !together.parent().unwrap().exists() {
-        fs::create_dir_all(together.parent().unwrap())?
-    }
-    //info!(logger.get(), "formatted: {}", together);
-    let wfile = &mut File::create(together)?;
-    let mut encoder = zstd::stream::Encoder::new(wfile, 5).unwrap();
-    io::copy(&mut paste.open(), &mut encoder).unwrap();
-    encoder.finish().unwrap();
-    return Ok(file.to_str().unwrap().to_string());
-}
 
 fn main() {
     let matches = App::new("greenhouse")
@@ -117,6 +83,6 @@ fn main() {
     rocket::custom(config, false)
         .attach(fairing)
         .manage(CachePath(_dir.to_string()))
-        .mount("/", routes![upload, get])
+        .mount("/", routes![router::upload, router::get])
         .launch();
 }
