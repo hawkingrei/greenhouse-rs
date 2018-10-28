@@ -6,6 +6,8 @@ extern crate hyper;
 extern crate rocket;
 
 use clap::{App, Arg};
+use futures::future::lazy;
+use futures::Future;
 use rocket::config::{Config, Environment};
 use rocket_slog::SlogFairing;
 use sloggers::{
@@ -13,11 +15,7 @@ use sloggers::{
     types::Severity,
     Build,
 };
-
-use hyper::header::ContentType;
-use hyper::mime::Mime;
-use hyper::server::{Request, Response, Server};
-use prometheus::{Counter, Encoder, Gauge, HistogramVec, TextEncoder};
+use tokio::runtime::Runtime;
 
 use greenhouse::config::CachePath;
 use greenhouse::router;
@@ -58,8 +56,8 @@ fn main() {
 
     let fairing = SlogFairing::new(logger);
 
-    let _dir = matches.value_of("dir").unwrap().to_owned();
-    let _host = matches.value_of("host").unwrap_or("0.0.0.0");
+    let _dir = matches.value_of("dir").unwrap_or("~/tmp/cache").to_owned();
+    let _host = matches.value_of("host").unwrap_or("0.0.0.0").to_owned();;
 
     let _cache_port = matches
         .value_of("cachePort")
@@ -72,28 +70,32 @@ fn main() {
         .parse::<u16>()
         .unwrap();
     println!("port was passed in: {}", _cache_port);
-    let config = Config::build(Environment::Staging)
-        .address(_host)
-        .port(_cache_port)
-        .finalize()
-        .unwrap();
-    rocket::custom(config, false)
-        .attach(fairing)
-        .manage(CachePath(_dir.to_string()))
-        .mount("/", routes![router::upload, router::get])
-        .launch();
-
     let metrics_addr = format!("{}:{}", "0.0.0.0", _metrics_port);
-    let encoder = TextEncoder::new();
-    Server::http(metrics_addr)
-        .unwrap()
-        .handle(move |_: Request, mut res: Response| {
-            let metric_families = prometheus::gather();
-            let mut buffer = vec![];
-            encoder.encode(&metric_families, &mut buffer).unwrap();
-            res.headers_mut()
-                .set(ContentType(encoder.format_type().parse::<Mime>().unwrap()));
-            res.send(&buffer).unwrap();
-        })
-        .unwrap();
+    println!("port was passed in: {}", metrics_addr);
+    let mut rt = Runtime::new().unwrap();
+    rt.spawn(lazy(move || {
+        let config = Config::build(Environment::Staging)
+            .address(_host)
+            .port(_cache_port)
+            .finalize()
+            .unwrap();
+        rocket::custom(config, false)
+            .attach(fairing)
+            .manage(CachePath(_dir.to_string()))
+            .mount("/", routes![router::upload, router::get])
+            .launch();
+        Ok(())
+    }));
+    rt.spawn(lazy(move || {
+        let config = Config::build(Environment::Staging)
+            .address("0.0.0.0")
+            .port(_metrics_port)
+            .finalize()
+            .unwrap();
+        rocket::custom(config, false)
+            .mount("/", routes![router::metrics_router::metrics])
+            .launch();
+        Ok(())
+    }));
+    rt.shutdown_on_idle().wait().unwrap();
 }

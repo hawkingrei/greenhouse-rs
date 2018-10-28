@@ -1,3 +1,5 @@
+pub mod metrics_router;
+
 use crate::config::CachePath;
 use crate::disk::CacheFile;
 use crate::util::metrics;
