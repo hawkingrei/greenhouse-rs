@@ -45,9 +45,9 @@ pub fn get_disk_usage_prom<P: AsRef<Path>>(path: P) {
     unsafe {
         let data = match get_disk_usage(path) {
             Some((_, bytes_free, bytes_used)) => {
-                metrics::DiskFree.set(bytes_free as f64);
-                metrics::DiskUsed.set(bytes_used as f64);
-                metrics::DiskTotal.set(bytes_free as f64 + bytes_used as f64);
+                metrics::DiskFree.set(bytes_free as f64 / 1.0e9);
+                metrics::DiskUsed.set(bytes_used as f64 / 1.0e9);
+                metrics::DiskTotal.set((bytes_free as f64 + bytes_used as f64) / 1.0e9);
             }
             None => return,
         };
