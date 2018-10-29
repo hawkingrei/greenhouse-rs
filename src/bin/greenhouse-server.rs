@@ -7,6 +7,7 @@ extern crate rocket;
 
 use clap::{App, Arg};
 use futures::future::lazy;
+use futures::stream::Stream;
 use futures::Future;
 use rocket::config::{Config, Environment};
 use rocket_slog::SlogFairing;
@@ -15,9 +16,14 @@ use sloggers::{
     types::Severity,
     Build,
 };
+use std::path::Path;
+use std::time::{Duration, Instant};
+use std::{thread, time};
 use tokio::runtime::Runtime;
+use tokio::timer::Interval;
 
 use greenhouse::config::CachePath;
+use greenhouse::disk::get_disk_usage_prom;
 use greenhouse::router;
 
 fn main() {
@@ -69,11 +75,11 @@ fn main() {
         .unwrap_or("9090")
         .parse::<u16>()
         .unwrap();
-    println!("port was passed in: {}", _cache_port);
     let metrics_addr = format!("{}:{}", "0.0.0.0", _metrics_port);
-    println!("port was passed in: {}", metrics_addr);
     let mut rt = Runtime::new().unwrap();
+    let metrics_dir = _dir.to_string().to_string();
     rt.spawn(lazy(move || {
+        println!("port was passed in: {}", _cache_port);
         let config = Config::build(Environment::Staging)
             .address(_host)
             .port(_cache_port)
@@ -87,6 +93,7 @@ fn main() {
         Ok(())
     }));
     rt.spawn(lazy(move || {
+        println!("port was passed in: {}", metrics_addr);
         let config = Config::build(Environment::Staging)
             .address("0.0.0.0")
             .port(_metrics_port)
@@ -95,6 +102,14 @@ fn main() {
         rocket::custom(config, false)
             .mount("/", routes![router::metrics_router::metrics])
             .launch();
+        Ok(())
+    }));
+    let ten_millis = time::Duration::from_millis(1000);
+    rt.spawn(lazy(move || {
+        loop {
+            thread::sleep(ten_millis);
+            get_disk_usage_prom(Path::new(&metrics_dir));
+        }
         Ok(())
     }));
     rt.shutdown_on_idle().wait().unwrap();
