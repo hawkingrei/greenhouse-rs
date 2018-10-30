@@ -1,5 +1,5 @@
 use prometheus::*;
-use prometheus::{Counter, Encoder, Gauge, HistogramVec, TextEncoder};
+use prometheus::{Counter, Gauge};
 
 lazy_static! {
     pub static ref DiskFree: Gauge = register_gauge!(opts!(

@@ -7,7 +7,6 @@ extern crate rocket;
 
 use clap::{App, Arg};
 use futures::future::lazy;
-use futures::stream::Stream;
 use futures::Future;
 use rocket::config::{Config, Environment};
 use rocket_slog::SlogFairing;
@@ -17,13 +16,12 @@ use sloggers::{
     Build,
 };
 use std::path::Path;
-use std::time::{Duration, Instant};
 use std::{thread, time};
 use tokio::runtime::Runtime;
-use tokio::timer::Interval;
 
 use greenhouse::config::CachePath;
 use greenhouse::disk::get_disk_usage_prom;
+use greenhouse::diskgc::lazy;
 use greenhouse::router;
 
 fn main() {
@@ -78,6 +76,7 @@ fn main() {
     let metrics_addr = format!("{}:{}", "0.0.0.0", _metrics_port);
     let mut rt = Runtime::new().unwrap();
     let metrics_dir = _dir.to_string().to_string();
+    let gcpath = metrics_dir.clone();
     rt.spawn(lazy(move || {
         println!("port was passed in: {}", _cache_port);
         let config = Config::build(Environment::Staging)
@@ -109,6 +108,16 @@ fn main() {
         loop {
             thread::sleep(ten_millis);
             get_disk_usage_prom(Path::new(&metrics_dir));
+        }
+        Ok(())
+    }));
+    let pathbuf = Path::new(&gcpath).to_path_buf();
+    let gc = lazy::lazyGC::new(pathbuf.as_path(), 0.8);
+    let gc_millis = time::Duration::from_millis(10000);
+    rt.spawn(lazy(move || {
+        loop {
+            gc.clone().rocket();
+            thread::sleep(gc_millis);
         }
         Ok(())
     }));

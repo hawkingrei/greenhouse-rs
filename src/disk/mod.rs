@@ -31,26 +31,26 @@ impl<'r> Responder<'r> for CacheFile {
     }
 }
 
-unsafe fn get_disk_usage<P: AsRef<Path>>(path: P) -> Option<(f64, u64, u64)> {
-    let mut buf: libc::statvfs = mem::uninitialized();
-    let path = CString::new(path.as_ref().to_str().unwrap().as_bytes()).unwrap();
-    libc::statvfs(path.as_ptr(), &mut buf as *mut _);
-    let percent_blocks_free = (buf.f_bfree as f64) / (buf.f_blocks as f64) * 100.0;
-    let bytes_free = (buf.f_bfree as u64) * (buf.f_bsize as u64);
-    let bytes_used = (buf.f_blocks as u64 - buf.f_bfree as u64) * (buf.f_bsize as u64);
-    return Some((percent_blocks_free, bytes_free, bytes_used));
+pub fn get_disk_usage<P: AsRef<Path>>(path: P) -> Option<(f64, u64, u64)> {
+    unsafe {
+        let mut buf: libc::statvfs = mem::uninitialized();
+        let path = CString::new(path.as_ref().to_str().unwrap().as_bytes()).unwrap();
+        libc::statvfs(path.as_ptr(), &mut buf as *mut _);
+        let percent_blocks_free = (buf.f_bfree as f64) / (buf.f_blocks as f64) * 100.0;
+        let bytes_free = (buf.f_bfree as u64) * (buf.f_bsize as u64);
+        let bytes_used = (buf.f_blocks as u64 - buf.f_bfree as u64) * (buf.f_bsize as u64);
+        return Some((percent_blocks_free, bytes_free, bytes_used));
+    }
 }
 
 pub fn get_disk_usage_prom<P: AsRef<Path>>(path: P) {
-    unsafe {
-        let data = match get_disk_usage(path) {
-            Some((_, bytes_free, bytes_used)) => {
-                metrics::DiskFree.set(bytes_free as f64 / 1.0e9);
-                metrics::DiskUsed.set(bytes_used as f64 / 1.0e9);
-                metrics::DiskTotal.set((bytes_free as f64 + bytes_used as f64) / 1.0e9);
-            }
-            None => return,
-        };
-        return;
-    }
+    let data = match get_disk_usage(path) {
+        Some((_, bytes_free, bytes_used)) => {
+            metrics::DiskFree.set(bytes_free as f64 / 1.0e9);
+            metrics::DiskUsed.set(bytes_used as f64 / 1.0e9);
+            metrics::DiskTotal.set((bytes_free as f64 + bytes_used as f64) / 1.0e9);
+        }
+        None => return,
+    };
+    return;
 }

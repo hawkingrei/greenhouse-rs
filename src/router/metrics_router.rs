@@ -1,13 +1,8 @@
-use libc;
-use prometheus::{Counter, Encoder, Gauge, HistogramVec, TextEncoder};
+use prometheus::{Encoder, TextEncoder};
 use rocket::http::ContentType;
 use rocket::request::Request;
 use rocket::response::{self, Responder};
-use std::ffi::CString;
-use std::fs::File;
 use std::io;
-use std::mem;
-use std::path::{Path, PathBuf};
 
 #[derive(Debug)]
 pub struct MetricsHandle();

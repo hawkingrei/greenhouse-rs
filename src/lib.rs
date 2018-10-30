@@ -20,11 +20,13 @@ extern crate rocket_slog;
 extern crate slog;
 extern crate sloggers;
 extern crate snap;
+extern crate walkdir;
 extern crate zstd;
 
 #[macro_use]
 pub mod compression;
 pub mod config;
 pub mod disk;
+pub mod diskgc;
 pub mod router;
 pub mod util;
