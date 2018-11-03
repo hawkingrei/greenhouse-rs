@@ -90,6 +90,11 @@ dependencies = [
 ]
 
 [[package]]
+name = "bit-vec"
+version = "0.4.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
 name = "bitflags"
 version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -193,6 +198,14 @@ dependencies = [
  "textwrap 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "unicode-width 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "vec_map 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "clippy"
+version = "0.0.302"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "term 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -349,8 +362,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 name = "greenhouse-rs"
 version = "0.1.0"
 dependencies = [
+ "bit-vec 0.4.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "brotli 2.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "clap 2.32.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "clippy 0.0.302 (registry+https://github.com/rust-lang/crates.io-index)",
  "flate2 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures 0.1.25 (registry+https://github.com/rust-lang/crates.io-index)",
  "hyper 0.9.18 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -363,6 +378,7 @@ dependencies = [
  "rocket 0.3.17 (registry+https://github.com/rust-lang/crates.io-index)",
  "rocket-slog 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "rocket_codegen 0.3.17 (registry+https://github.com/rust-lang/crates.io-index)",
+ "siphasher 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "slog 2.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "sloggers 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "snap 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1002,6 +1018,11 @@ dependencies = [
 ]
 
 [[package]]
+name = "siphasher"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
 name = "skeptic"
 version = "0.13.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1586,6 +1607,7 @@ dependencies = [
 "checksum base64 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)" = "30e93c03064e7590d0466209155251b90c22e37fab1daf2771582598b5827557"
 "checksum base64 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)" = "96434f987501f0ed4eb336a411e0631ecd1afa11574fe148587adc4ff96143c9"
 "checksum base64 0.9.3 (registry+https://github.com/rust-lang/crates.io-index)" = "489d6c0ed21b11d038c31b6ceccca973e65d73ba3bd8ecb9a2babf5546164643"
+"checksum bit-vec 0.4.4 (registry+https://github.com/rust-lang/crates.io-index)" = "02b4ff8b16e6076c3e14220b39fbc1fabb6737522281a388998046859400895f"
 "checksum bitflags 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)" = "4efd02e230a02e18f92fc2735f44597385ed02ad8f831e7c1c1156ee5e1ab3a5"
 "checksum bitflags 1.0.4 (registry+https://github.com/rust-lang/crates.io-index)" = "228047a76f468627ca71776ecdebd732a3423081fcf5125585bcd7c49886ce12"
 "checksum blob 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "122c3fa3949d822d2a51c648db9e8105d6e75b89dc628cc366901d3d396fa4f4"
@@ -1600,6 +1622,7 @@ dependencies = [
 "checksum cfg-if 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)" = "0c4e7bb64a8ebb0d856483e1e682ea3422f883c5f5615a90d51a2c82fe87fdd3"
 "checksum chrono 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)" = "45912881121cb26fad7c38c17ba7daa18764771836b34fab7d3fbd93ed633878"
 "checksum clap 2.32.0 (registry+https://github.com/rust-lang/crates.io-index)" = "b957d88f4b6a63b9d70d5f454ac8011819c6efa7727858f458ab71c756ce2d3e"
+"checksum clippy 0.0.302 (registry+https://github.com/rust-lang/crates.io-index)" = "d911ee15579a3f50880d8c1d59ef6e79f9533127a3bd342462f5d584f5e8c294"
 "checksum cloudabi 0.0.3 (registry+https://github.com/rust-lang/crates.io-index)" = "ddfc5b9aa5d4507acaf872de71051dfd0e309860e88966e1051e462a077aac4f"
 "checksum cookie 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)" = "0e3d6405328b6edb412158b3b7710e2634e23f3614b9bb1c412df7952489a626"
 "checksum cookie 0.9.2 (registry+https://github.com/rust-lang/crates.io-index)" = "477eb650753e319be2ae77ec368a58c638f9f0c4d941c39bad95e950fb1d1d0d"
@@ -1694,6 +1717,7 @@ dependencies = [
 "checksum serde 1.0.79 (registry+https://github.com/rust-lang/crates.io-index)" = "84257ccd054dc351472528c8587b4de2dbf0dc0fe2e634030c1a90bfdacebaa9"
 "checksum serde_derive 1.0.79 (registry+https://github.com/rust-lang/crates.io-index)" = "31569d901045afbff7a9479f793177fe9259819aff10ab4f89ef69bbc5f567fe"
 "checksum serde_json 1.0.31 (registry+https://github.com/rust-lang/crates.io-index)" = "bb47a3d5c84320222f66d7db21157c4a7407755de41798f9b4c1c40593397b1a"
+"checksum siphasher 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)" = "0b8de496cf83d4ed58b6be86c3a275b8602f6ffe98d3024a869e124147a9a3ac"
 "checksum skeptic 0.13.3 (registry+https://github.com/rust-lang/crates.io-index)" = "c4474d6da9593171bcb086890fc344a3a12783cb24e5b141f8a5d0e43561f4b6"
 "checksum slab 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)" = "5f9776d6b986f77b35c6cf846c11ad986ff128fe0b2b63a3628e3755e8d3102d"
 "checksum slog 2.4.1 (registry+https://github.com/rust-lang/crates.io-index)" = "1e1a2eec401952cd7b12a84ea120e2d57281329940c3f93c2bf04f462539508e"
