@@ -1,5 +1,6 @@
 use prometheus::{Encoder, TextEncoder};
 use rocket::http::ContentType;
+use rocket::http::Status;
 use rocket::request::Request;
 use rocket::response::{self, Responder};
 use std::io;
@@ -19,7 +20,10 @@ impl<'r> Responder<'r> for MetricsHandle {
         let mut buffer = vec![];
         let metric_familys = prometheus::gather();
         for mf in metric_familys {
-            encoder.encode(&[mf], &mut buffer);
+            match encoder.encode(&[mf], &mut buffer) {
+                Ok(_) => {}
+                Err(_) => return Err(Status::InternalServerError),
+            }
         }
         let mut response = buffer.respond_to(req)?;
         response.set_header(ContentType::Plain);

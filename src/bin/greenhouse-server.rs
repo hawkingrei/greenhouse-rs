@@ -112,7 +112,7 @@ fn main() {
         Ok(())
     }));
     let pathbuf = Path::new(&gcpath).to_path_buf();
-    let gc = lazy::lazyGC::new(pathbuf.as_path(), 0.8);
+    let gc = lazy::Lazygc::new(pathbuf.as_path(), 0.8);
     let gc_millis = time::Duration::from_millis(10000);
     rt.spawn(lazy(move || {
         loop {

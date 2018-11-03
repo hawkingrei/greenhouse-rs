@@ -44,7 +44,7 @@ pub fn get_disk_usage<P: AsRef<Path>>(path: P) -> Option<(f64, u64, u64)> {
 }
 
 pub fn get_disk_usage_prom<P: AsRef<Path>>(path: P) {
-    let data = match get_disk_usage(path) {
+    match get_disk_usage(path) {
         Some((_, bytes_free, bytes_used)) => {
             metrics::DiskFree.set(bytes_free as f64 / 1.0e9);
             metrics::DiskUsed.set(bytes_used as f64 / 1.0e9);

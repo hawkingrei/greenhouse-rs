@@ -58,14 +58,14 @@ fn get_entries<P: AsRef<Path>>(path: P) -> Vec<EntryInfo> {
 }
 
 #[derive(Clone)]
-pub struct lazyGC {
+pub struct Lazygc {
     path: PathBuf,
     min_percent_block_free: f64,
 }
 
-impl lazyGC {
-    pub fn new<P: AsRef<Path>>(path: P, min_percent_block_free: f64) -> lazyGC {
-        lazyGC {
+impl Lazygc {
+    pub fn new<P: AsRef<Path>>(path: P, min_percent_block_free: f64) -> Lazygc {
+        Lazygc {
             path: path.as_ref().to_owned(),
             min_percent_block_free: min_percent_block_free,
         }
@@ -77,9 +77,12 @@ impl lazyGC {
                 if rate < self.min_percent_block_free {
                     let entries = get_entries(self.path.as_path());
                     for entry in entries.into_iter() {
-                        fs::remove_file(entry.path.as_path());
+                        match fs::remove_file(entry.path.as_path()) {
+                            Ok(_) => {}
+                            Err(_) => continue,
+                        }
                         metrics::FilesEvicted.inc();
-                        let meta = match fs::metadata(entry.path.as_path()) {
+                        match fs::metadata(entry.path.as_path()) {
                             Ok(meta) => {
                                 if let Ok(time) = meta.created() {
                                     metrics::LastEvictedAccessAge.set(
