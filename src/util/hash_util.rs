@@ -1,3 +1,4 @@
+use std::mem;
 // Get 32 more bits of randomness from a 32-bit hash:
 #[inline(always)]
 pub fn rehash32to32(hash: u32) -> u32 {
@@ -10,5 +11,9 @@ pub fn rehash32to32(hash: u32) -> u32 {
     // randomness of the constants) that any subset of bit positions of
     // Rehash32to32(hash1) is equal to the same subset of bit positions
     // Rehash32to32(hash2) is minimal.
-    return (((hash as u64) * m + a) >> 32) as u32;
+    unsafe {
+        let result: [u8; 8] = mem::transmute((hash as u64).wrapping_mul(m).wrapping_add(a));
+
+        return mem::transmute::<[u8; 4], u32>([result[0], result[1], result[2], result[3]]);
+    }
 }

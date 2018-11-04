@@ -16,7 +16,7 @@ impl<T> CachePadded<T> {
     /// # Examples
     ///
     /// ```
-    /// use crossbeam_utils::CachePadded;
+    /// use greenhouse::util::cache_padded::CachePadded;
     ///
     /// let padded_value = CachePadded::new(1);
     /// ```
@@ -29,7 +29,7 @@ impl<T> CachePadded<T> {
     /// # Examples
     ///
     /// ```
-    /// use crossbeam_utils::CachePadded;
+    /// use greenhouse::util::cache_padded::CachePadded;
     ///
     /// let padded_value = CachePadded::new(7);
     /// let value = padded_value.into_inner();
