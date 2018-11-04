@@ -42,14 +42,14 @@ pub struct Bloomfilter {
     /// efficiency reasons.
     directory_mask_: u32,
 
-    directory_: Vec<[i8; 16]>,
+    directory_: Vec<[i64; 4]>,
 }
 
 impl Bloomfilter {
     pub fn init(self, log_bufferpool_space: u8) -> Bloomfilter {
         let _log_num_buckets = cmp::max(1, log_bufferpool_space - LOG_BUCKET_BYTE_SIZE);
         let alloc_size: usize = self.directory_size();
-        let _directory = Vec::with_capacity(alloc_size / mem::size_of::<[i8; 16]>());
+        let _directory = Vec::with_capacity(alloc_size / mem::size_of::<[i64; 4]>());
         Bloomfilter {
             log_num_buckets_: _log_num_buckets,
             directory_mask_: (1 << cmp::min(63, _log_num_buckets)) - 1,
@@ -61,28 +61,14 @@ impl Bloomfilter {
         return 1 << (self.log_num_buckets_ + LOG_BUCKET_BYTE_SIZE);
     }
 
-    fn bucket_insert_avx2(&self, bucket_idx: u32, hash: u32) {
+    fn bucket_insert_avx2(&mut self, bucket_idx: u32, hash: u32) {
         unsafe {
-            let bucket = _mm_set_epi8(
-                self.directory_.get(bucket_idx as usize).unwrap()[0],
-                self.directory_.get(bucket_idx as usize).unwrap()[1],
-                self.directory_.get(bucket_idx as usize).unwrap()[2],
-                self.directory_.get(bucket_idx as usize).unwrap()[3],
-                self.directory_.get(bucket_idx as usize).unwrap()[4],
-                self.directory_.get(bucket_idx as usize).unwrap()[5],
-                self.directory_.get(bucket_idx as usize).unwrap()[6],
-                self.directory_.get(bucket_idx as usize).unwrap()[7],
-                self.directory_.get(bucket_idx as usize).unwrap()[8],
-                self.directory_.get(bucket_idx as usize).unwrap()[9],
-                self.directory_.get(bucket_idx as usize).unwrap()[10],
-                self.directory_.get(bucket_idx as usize).unwrap()[11],
-                self.directory_.get(bucket_idx as usize).unwrap()[12],
-                self.directory_.get(bucket_idx as usize).unwrap()[13],
-                self.directory_.get(bucket_idx as usize).unwrap()[14],
-                self.directory_.get(bucket_idx as usize).unwrap()[15],
-            );
+            let mask = make_mask(hash);
+            let addr = self.directory_.as_mut_ptr().offset(bucket_idx as isize);
+            let mut bucket = _mm256_load_si256(addr as *const __m256i);
+            _mm256_store_si256(&mut bucket, _mm256_or_si256(bucket, mask));
+            _mm256_zeroupper();
         }
-        let mask = make_mask(hash);
     }
 
     #[inline(always)]
