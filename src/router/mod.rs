@@ -75,3 +75,15 @@ pub fn upload(
     encoder.finish().unwrap();
     return Ok(together.to_str().unwrap().to_string());
 }
+
+#[head("/<file..>")]
+pub fn head(file: PathBuf, path: State<CachePath>, _logger: SyncLogger) -> Option<()> {
+    let filename = match file.to_str() {
+        Some(filen) => filen,
+        None => return None,
+    };
+    if Path::new(&path.0).join(filename.to_string()).exists() {
+        return Some(());
+    }
+    return None;
+}

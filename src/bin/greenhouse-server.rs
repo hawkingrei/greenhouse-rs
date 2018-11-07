@@ -87,7 +87,7 @@ fn main() {
         rocket::custom(config, false)
             .attach(fairing)
             .manage(CachePath(_dir.to_string()))
-            .mount("/", routes![router::upload, router::get])
+            .mount("/", routes![router::upload, router::get, router::head])
             .launch();
         Ok(())
     }));
