@@ -5,6 +5,13 @@
 #![cfg_attr(feature = "clippy", feature(plugin))]
 #![cfg_attr(feature = "clippy", plugin(clippy))]
 
+extern crate crossbeam;
+#[macro_use]
+extern crate crossbeam_channel;
+extern crate core_affinity;
+#[macro_use]
+extern crate log;
+extern crate tokio_timer;
 #[macro_use]
 extern crate quick_error;
 extern crate brotli;
