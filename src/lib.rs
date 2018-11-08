@@ -1,6 +1,5 @@
-#![feature(plugin)]
 #![feature(type_ascription)]
-#![plugin(rocket_codegen)]
+#![feature(custom_attribute)]
 #![feature(proc_macro_hygiene, decl_macro)]
 
 extern crate rand;
@@ -12,11 +11,11 @@ extern crate clap;
 extern crate flate2;
 #[macro_use]
 extern crate lazy_static;
-extern crate hyper;
 extern crate libc;
 extern crate lz4;
+#[macro_use]
 extern crate rocket;
-extern crate rocket_slog;
+#[macro_use]
 extern crate slog;
 extern crate sloggers;
 extern crate snap;
