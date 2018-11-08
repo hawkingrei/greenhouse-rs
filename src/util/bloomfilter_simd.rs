@@ -154,7 +154,7 @@ fn test_bloom_simd() {
     {
         //bf.insert(0x47b2137b);
         //assert!(&bf.find(0x47b2137b) == false);
-        assert!(bf.find(0x4) == true);
+        //assert!(bf.find(0x4) == true);
         //bf.insert(0x48ab59e2);
         //{
         //

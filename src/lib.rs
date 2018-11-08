@@ -1,3 +1,4 @@
+#![crate_type = "lib"]
 #![feature(plugin)]
 #![feature(type_ascription)]
 #![plugin(rocket_codegen)]

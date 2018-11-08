@@ -1,5 +1,5 @@
 pub mod bloomfilter;
-//pub mod bloomfilter_simd;
+pub mod bloomfilter_simd;
 pub mod cache_padded;
 pub mod coding;
 pub mod hash_util;
