@@ -15,21 +15,19 @@ crossbeam = "0.2"
 flate2 = "1.0.2"
 lz4 = "1.23"
 quick-error = "1.2.2"
-rocket = "0.3.17"
-rocket_codegen = "0.3.17"
+rocket = "0.4.0-rc.1"
+rocket_codegen = "0.4.0-rc.1"
 snap = "0.2"
 zstd = "0.4.14"
 rand = "0.4"
-rocket-slog = "0.2.2"
 siphasher = "^0.2.2"
 sloggers = "0.3.1"
 slog = "2.4.1"
 lazy_static = "1.1.0"
 prometheus = "0.4.2"
-hyper = {version = "0.9", default-features = false}
 libc = "0.2.43"
+log = "0.4.6"
 tokio = "0.1.11"
-log = "0.4"
 time = "0.1.40"
 tokio-core = "0.1.17"
 tokio-timer = "0.2.7"
@@ -42,3 +40,23 @@ name = "greenhouse"
 
 [[bin]]
 name = "greenhouse-server"
+
+[profile.dev]
+opt-level = 0  # Controls the --opt-level the compiler builds with
+debug = true   # Controls whether the compiler passes `-g`
+codegen-units = 4
+
+# The release profile, used for `cargo build --release`
+[profile.release]
+lto = true
+opt-level = 3
+debug = true
+# TODO: remove this once rust-lang/rust#50199 and rust-lang/rust#53833 are resolved.
+codegen-units = 1
+
+# The benchmark profile is identical to release, except that lto = false
+[profile.bench]
+lto = false
+opt-level = 3
+debug = true
+codegen-units = 1

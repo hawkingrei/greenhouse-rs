@@ -1,7 +1,7 @@
 #![crate_type = "lib"]
 #![feature(plugin)]
 #![feature(type_ascription)]
-#![plugin(rocket_codegen)]
+#![feature(custom_attribute)]
 #![feature(proc_macro_hygiene, decl_macro)]
 #![cfg_attr(feature = "clippy", feature(plugin))]
 #![cfg_attr(feature = "clippy", plugin(clippy))]
@@ -10,8 +10,6 @@ extern crate crossbeam;
 #[macro_use]
 extern crate crossbeam_channel;
 extern crate core_affinity;
-#[macro_use]
-extern crate log;
 extern crate tokio_timer;
 #[macro_use]
 extern crate quick_error;
@@ -21,13 +19,13 @@ extern crate flate2;
 extern crate rand;
 #[macro_use]
 extern crate lazy_static;
-extern crate bit_vec;
-extern crate hyper;
 extern crate libc;
 extern crate lz4;
+#[macro_use]
 extern crate rocket;
-extern crate rocket_slog;
-extern crate siphasher;
+#[macro_use]
+extern crate log;
+#[macro_use]
 extern crate slog;
 extern crate sloggers;
 extern crate snap;

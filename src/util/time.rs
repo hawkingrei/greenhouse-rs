@@ -120,10 +120,10 @@ impl Monitor {
 
                     let after = now();
                     if let Err(e) = after.duration_since(before) {
-                        error!(
-                            "system time jumped back, {:?} -> {:?}, err {:?}",
-                            before, after, e
-                        );
+                        //error!(
+                        //    "system time jumped back, {:?} -> {:?}, err {:?}",
+                        //    before, after, e
+                        //);
                         on_jumped()
                     }
                 }
@@ -151,12 +151,12 @@ impl Drop for Monitor {
         }
 
         if let Err(e) = self.tx.send(true) {
-            error!("send quit message for time monitor worker failed {:?}", e);
+            //error!("send quit message for time monitor worker failed {:?}", e);
             return;
         }
 
         if let Err(e) = h.unwrap().join() {
-            error!("join time monitor worker failed {:?}", e);
+            //error!("join time monitor worker failed {:?}", e);
             return;
         }
     }
@@ -321,11 +321,11 @@ impl Instant {
         if dur >= 0 {
             Duration::from_millis(dur as u64)
         } else {
-            debug!(
-                "coarse time jumped back, {:.3} -> {:.3}",
-                earlier.sec as f64 + f64::from(earlier.nsec) / NANOSECONDS_PER_SECOND as f64,
-                later.sec as f64 + f64::from(later.nsec) / NANOSECONDS_PER_SECOND as f64
-            );
+            //debug!(
+            //    "coarse time jumped back, {:.3} -> {:.3}",
+            //    earlier.sec as f64 + f64::from(earlier.nsec) / NANOSECONDS_PER_SECOND as f64,
+            //    later.sec as f64 + f64::from(later.nsec) / NANOSECONDS_PER_SECOND as f64
+            //);
             Duration::from_millis(0)
         }
     }

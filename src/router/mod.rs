@@ -5,7 +5,6 @@ use crate::disk::CacheFile;
 use crate::util::metrics;
 use rocket::Data;
 use rocket::State;
-use rocket_slog::SyncLogger;
 use std::fs;
 use std::fs::File;
 use std::io;
@@ -14,7 +13,7 @@ use std::path::Path;
 use std::path::PathBuf;
 
 #[get("/<file..>")]
-pub fn get(file: PathBuf, path: State<CachePath>, _logger: SyncLogger) -> Option<CacheFile> {
+pub fn get(file: PathBuf, path: State<CachePath>) -> Option<CacheFile> {
     let filename = match file.to_str() {
         Some(filen) => filen,
         None => return None,
@@ -41,12 +40,7 @@ pub fn get(file: PathBuf, path: State<CachePath>, _logger: SyncLogger) -> Option
 }
 
 #[put("/<file..>", data = "<paste>")]
-pub fn upload(
-    paste: Data,
-    file: PathBuf,
-    path: State<CachePath>,
-    _logger: SyncLogger,
-) -> io::Result<String> {
+pub fn upload(paste: Data, file: PathBuf, path: State<CachePath>) -> io::Result<String> {
     let filename = match file.to_str() {
         Some(filen) => filen,
         None => return Err(Error::new(ErrorKind::Other, "filename url error")),
@@ -59,7 +53,15 @@ pub fn upload(
     let mut encoder = match zstd::stream::Encoder::new(wfile, 5) {
         Ok(en) => en,
         Err(_) => {
-            fs::remove_file(together.to_str().unwrap().to_string()).unwrap();
+            match fs::remove_file(together.to_str().unwrap().to_string()) {
+                Ok(_) => (),
+                Err(e) => {
+                    return Err(Error::new(
+                        ErrorKind::Other,
+                        "Encoder init error and fail to rm",
+                    ));
+                }
+            }
             return Err(Error::new(ErrorKind::Other, "Encoder init error"));
         }
     };
@@ -68,10 +70,30 @@ pub fn upload(
             //empty
         }
         Err(_) => {
-            fs::remove_file(together.to_str().unwrap().to_string()).unwrap();
+            match fs::remove_file(together.to_str().unwrap().to_string()) {
+                Ok(_) => (),
+                Err(e) => {
+                    return Err(Error::new(
+                        ErrorKind::Other,
+                        "Encoder init error and fail to rm",
+                    ));
+                }
+            }
             return Err(Error::new(ErrorKind::Other, "compress init error"));
         }
     };
     encoder.finish().unwrap();
     return Ok(together.to_str().unwrap().to_string());
+}
+
+#[head("/<file..>")]
+pub fn head(file: PathBuf, path: State<CachePath>) -> Option<()> {
+    let filename = match file.to_str() {
+        Some(filen) => filen,
+        None => return None,
+    };
+    if Path::new(&path.0).join(filename.to_string()).exists() {
+        return Some(());
+    }
+    return None;
 }

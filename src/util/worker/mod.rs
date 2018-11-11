@@ -62,7 +62,7 @@ pub trait Runnable<T: Display> {
             let task_str = format!("{}", t);
             let timer = SlowTimer::new();
             self.run(t);
-            slow_log!(timer, "handle task {}", task_str);
+            //slow_log!(timer, "handle task {}", task_str);
         }
     }
 
@@ -121,7 +121,7 @@ impl<T: Display> Scheduler<T> {
     ///
     /// If the worker is stopped or number pending tasks exceeds capacity, an error will return.
     pub fn schedule(&self, task: T) -> Result<(), ScheduleError<T>> {
-        debug!("scheduling task {}", task);
+        //debug!("scheduling task {}", task);
         if let Err(e) = self.sender.try_send(Some(task)) {
             match e {
                 TrySendError::Disconnected(Some(t)) => return Err(ScheduleError::Stopped(t)),
@@ -315,9 +315,9 @@ impl<T: Display + Send + 'static> Worker<T> {
         U: Send + 'static,
     {
         let mut receiver = self.receiver.lock().unwrap();
-        info!("starting working thread: {}", self.scheduler.name);
+        //info!("starting working thread: {}", self.scheduler.name);
         if receiver.is_none() {
-            warn!("worker {} has been started.", self.scheduler.name);
+            //warn!("worker {} has been started.", self.scheduler.name);
             return Ok(());
         }
 
@@ -358,10 +358,10 @@ impl<T: Display + Send + 'static> Worker<T> {
     /// Stop the worker thread.
     pub fn stop(&mut self) -> Option<thread::JoinHandle<()>> {
         // close sender explicitly so the background thread will exit.
-        info!("stoping {}", self.scheduler.name);
+        //info!("stoping {}", self.scheduler.name);
         let handle = self.handle.take()?;
         if let Err(e) = self.scheduler.sender.send(None) {
-            warn!("failed to stop worker thread: {:?}", e);
+            //warn!("failed to stop worker thread: {:?}", e);
         }
         Some(handle)
     }
