@@ -23,7 +23,6 @@ extern crate libc;
 extern crate lz4;
 #[macro_use]
 extern crate rocket;
-#[macro_use]
 extern crate log;
 #[macro_use]
 extern crate slog;
