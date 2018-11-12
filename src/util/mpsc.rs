@@ -115,11 +115,12 @@ impl<T> Sender<T> {
     pub fn try_send(&self, t: T) -> Result<(), TrySendError<T>> {
         if !self.state.is_receiver_closed() {
             match self.sender.try_send(t) {
-                Ok(_) => {}
+                Ok(_) => {
+                    self.notify();
+                    Ok(())
+                }
                 Err(e) => return Err(TrySendError::Full(e.into_inner())),
             };
-            self.notify();
-            Ok(())
         } else {
             Err(TrySendError::Disconnected(t))
         }
