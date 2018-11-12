@@ -5,6 +5,7 @@
 #![feature(proc_macro_hygiene, decl_macro)]
 #![cfg_attr(feature = "clippy", feature(plugin))]
 #![cfg_attr(feature = "clippy", plugin(clippy))]
+#![recursion_limit = "128"]
 
 extern crate crossbeam;
 #[macro_use]
@@ -24,7 +25,20 @@ extern crate lz4;
 #[macro_use]
 extern crate rocket;
 extern crate log;
-#[macro_use]
+#[cfg_attr(not(test), macro_use(slog_o, slog_info, slog_kv))]
+#[cfg_attr(
+    test,
+    macro_use(
+        slog_info,
+        slog_o,
+        slog_kv,
+        slog_crit,
+        slog_log,
+        slog_record,
+        slog_b,
+        slog_record_static
+    )
+)]
 extern crate slog;
 extern crate sloggers;
 extern crate snap;
