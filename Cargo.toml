@@ -10,7 +10,7 @@ brotli = "2.5"
 clap = "2.32.0"
 clippy = {version = "0.0.302", optional = true}
 core_affinity = "0.5.9"
-crossbeam-channel = "0.2"
+crossbeam-channel = "0.3.1"
 crossbeam = "0.2"
 flate2 = "1.0.2"
 lz4 = "1.23"

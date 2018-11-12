@@ -1,4 +1,5 @@
 #![feature(proc_macro_hygiene)]
+#![recursion_limit = "128"]
 
 extern crate greenhouse;
 #[macro_use]
