@@ -117,7 +117,7 @@ impl<T> Sender<T> {
             match self.sender.try_send(t) {
                 Ok(_) => {
                     self.notify();
-                    Ok(())
+                    return Ok(());
                 }
                 Err(e) => return Err(TrySendError::Full(e.into_inner())),
             };

@@ -13,7 +13,7 @@ use std::thread::{self, Builder as ThreadBuilder, JoinHandle};
 use std::time::Duration;
 use std::{io, usize};
 
-use log::{info, trace, warn};
+use log::{info, warn};
 
 #[derive(Eq, PartialEq)]
 pub enum ScheduleError<T> {
