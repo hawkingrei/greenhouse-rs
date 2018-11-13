@@ -6,11 +6,11 @@ use crate::util::metrics;
 use rocket::Data;
 use rocket::State;
 use std::fs;
-use std::fs::File;
 use std::io;
 use std::io::{Error, ErrorKind};
 use std::path::Path;
 use std::path::PathBuf;
+use tempfile::NamedTempFile;
 
 #[get("/<file..>")]
 pub fn get(file: PathBuf, path: State<CachePath>) -> Option<CacheFile> {
@@ -49,19 +49,11 @@ pub fn upload(paste: Data, file: PathBuf, path: State<CachePath>) -> io::Result<
     if !together.parent().unwrap().exists() {
         fs::create_dir_all(together.parent().unwrap())?
     }
-    let wfile = &mut File::create(&together)?;
-    let mut encoder = match zstd::stream::Encoder::new(wfile, 5) {
+    let mut wfile = NamedTempFile::new_in(together.parent().unwrap()).unwrap();
+    let mut encoder = match zstd::stream::Encoder::new(wfile.as_file_mut(), 5) {
         Ok(en) => en,
         Err(_) => {
-            match fs::remove_file(together.to_str().unwrap().to_string()) {
-                Ok(_) => (),
-                Err(e) => {
-                    return Err(Error::new(
-                        ErrorKind::Other,
-                        "Encoder init error and fail to rm",
-                    ));
-                }
-            }
+            wfile.close().ok();
             return Err(Error::new(ErrorKind::Other, "Encoder init error"));
         }
     };
@@ -70,19 +62,12 @@ pub fn upload(paste: Data, file: PathBuf, path: State<CachePath>) -> io::Result<
             //empty
         }
         Err(_) => {
-            match fs::remove_file(together.to_str().unwrap().to_string()) {
-                Ok(_) => (),
-                Err(e) => {
-                    return Err(Error::new(
-                        ErrorKind::Other,
-                        "Encoder init error and fail to rm",
-                    ));
-                }
-            }
+            wfile.close().ok();
             return Err(Error::new(ErrorKind::Other, "compress init error"));
         }
     };
     encoder.finish().unwrap();
+    fs::rename(wfile.path(), together.clone()).unwrap();
     return Ok(together.to_str().unwrap().to_string());
 }
 
