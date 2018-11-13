@@ -139,15 +139,12 @@ impl<T> Receiver<T> {
     pub fn try_recv(&self) -> Result<T, TryRecvError> {
         match self.receiver.try_recv() {
             Ok(t) => Ok(t),
-            Err(_) => {
-                if !self.state.is_sender_closed() {
-                    return Err(TryRecvError::Empty);
+            Err(e) => match e {
+                crossbeam_channel::TryRecvError::Empty => return Err(TryRecvError::Empty),
+                crossbeam_channel::TryRecvError::Disconnected => {
+                    return Err(TryRecvError::Disconnected)
                 }
-                match self.receiver.try_recv() {
-                    Ok(t) => return Ok(t),
-                    Err(_) => return Err(TryRecvError::Disconnected),
-                }
-            }
+            },
         }
     }
 
