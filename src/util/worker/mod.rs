@@ -4,6 +4,7 @@ use core_affinity::CoreId;
 use crate::util::mpsc::{self, Receiver, Sender};
 use crate::util::time::{Instant, SlowTimer};
 use crate::util::timer::Timer;
+use log::{debug, info, warn};
 use std::error::Error;
 use std::fmt::{self, Debug, Display, Formatter};
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -12,8 +13,6 @@ use std::sync::{Arc, Mutex};
 use std::thread::{self, Builder as ThreadBuilder, JoinHandle};
 use std::time::Duration;
 use std::{io, usize};
-
-use log::{info, warn};
 
 #[derive(Eq, PartialEq)]
 pub enum ScheduleError<T> {

@@ -8,23 +8,23 @@ pub enum WALRecoveryMode {
     // Original levelDB recovery
     // We tolerate incomplete record in trailing data on all logs
     // Use case : This is legacy behavior
-    kTolerateCorruptedTailRecords = 0x00,
+    KTolerateCorruptedTailRecords = 0x00,
     // Recover from clean shutdown
     // We don't expect to find any corruption in the WAL
     // Use case : This is ideal for unit tests and rare applications that
     // can require high consistency guarantee
-    kAbsoluteConsistency = 0x01,
+    KAbsoluteConsistency = 0x01,
     // Recover to point-in-time consistency (default)
     // We stop the WAL playback on discovering WAL inconsistency
     // Use case : Ideal for systems that have disk controller cache like
     // hard disk, SSD without super capacitor that store related data
-    kPointInTimeRecovery = 0x02,
+    KPointInTimeRecovery = 0x02,
     // Recovery after a disaster
     // We ignore any corruption in the WAL and try to salvage as much data as
     // possible
     // Use case : Ideal for last ditch effort to recover data or systems that
     // operate with low grade unrelated data
-    kSkipAnyCorruptedRecords = 0x03,
+    KSkipAnyCorruptedRecords = 0x03,
 }
 
 #[derive(Debug, Clone)]

@@ -25,20 +25,8 @@ extern crate lz4;
 #[macro_use]
 extern crate rocket;
 extern crate log;
-#[cfg_attr(not(test), macro_use(slog_o, slog_info, slog_kv))]
-#[cfg_attr(
-    test,
-    macro_use(
-        slog_info,
-        slog_o,
-        slog_kv,
-        slog_crit,
-        slog_log,
-        slog_record,
-        slog_b,
-        slog_record_static
-    )
-)]
+#[cfg_attr(not(test), macro_use(slog_info))]
+#[cfg_attr(test, macro_use(slog_info))]
 extern crate slog;
 extern crate sloggers;
 extern crate snap;

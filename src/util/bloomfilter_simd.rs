@@ -7,7 +7,7 @@ use std::cmp;
 use std::mem;
 
 /// The size of an L1 cache line in bytes on x86-64.    
-const CACHE_LINE_SIZE: u8 = 64;
+const _CACHE_LINE_SIZE: u8 = 64;
 /// log2(number of bytes in a bucket)
 const LOG_BUCKET_BYTE_SIZE: u8 = 5;
 
@@ -23,7 +23,7 @@ struct Bucket {
 
     /// Used in case of duplicates. If true, then the bucketData union should be used as
     /// 'duplicates'.
-    hasDuplicates: bool,
+    has_duplicates: bool,
 
     /// Cache of the hash for data.
     /// TODO: Do we even have to cache the hash value?

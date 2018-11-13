@@ -21,7 +21,6 @@ supports closed detection and try operations.
 
 use crossbeam::sync::AtomicOption;
 use crossbeam_channel;
-use crossbeam_channel::Select;
 use futures::task::{self, Task};
 use futures::{Async, Poll, Stream};
 use std::sync::atomic::{AtomicIsize, Ordering};

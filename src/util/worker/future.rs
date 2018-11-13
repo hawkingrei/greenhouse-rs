@@ -6,6 +6,7 @@ use std::thread::{self, Builder, JoinHandle};
 
 use futures::sync::mpsc::{unbounded, UnboundedReceiver, UnboundedSender};
 use futures::Stream;
+use log::{debug, info, warn};
 use tokio_core::reactor::{Core, Handle};
 
 pub struct Stopped<T>(pub T);

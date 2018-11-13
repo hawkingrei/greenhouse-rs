@@ -17,8 +17,8 @@ use std::sync::mpsc::{self, Sender};
 use std::thread::{self, Builder, JoinHandle};
 use std::time::{SystemTime, UNIX_EPOCH};
 
+use log::error;
 use time::{Duration as TimeDuration, Timespec};
-
 // Re-export duration.
 pub use std::time::Duration;
 
@@ -120,10 +120,10 @@ impl Monitor {
 
                     let after = now();
                     if let Err(e) = after.duration_since(before) {
-                        //error!(
-                        //    "system time jumped back, {:?} -> {:?}, err {:?}",
-                        //    before, after, e
-                        //);
+                        error!(
+                            "system time jumped back, {:?} -> {:?}, err {:?}",
+                            before, after, e
+                        );
                         on_jumped()
                     }
                 }
@@ -151,12 +151,12 @@ impl Drop for Monitor {
         }
 
         if let Err(e) = self.tx.send(true) {
-            //error!("send quit message for time monitor worker failed {:?}", e);
+            error!("send quit message for time monitor worker failed {:?}", e);
             return;
         }
 
         if let Err(e) = h.unwrap().join() {
-            //error!("join time monitor worker failed {:?}", e);
+            error!("join time monitor worker failed {:?}", e);
             return;
         }
     }
