@@ -25,7 +25,6 @@ pub fn get(file: PathBuf, path: State<CachePath>) -> Option<CacheFile> {
             } else {
                 metrics::CASMisses.inc();
             }
-
             return None;
         }
         Some(result) => {

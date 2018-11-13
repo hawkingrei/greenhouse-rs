@@ -1,8 +1,10 @@
 use crate::util::metrics;
 use libc;
+use rocket::http::Status;
 use rocket::request::Request;
 use rocket::response::{self, Responder};
 use std::ffi::CString;
+use std::fs;
 use std::fs::File;
 use std::io;
 use std::mem;
@@ -17,17 +19,29 @@ impl CacheFile {
         Ok(CacheFile(path.as_ref().to_path_buf(), file))
     }
 
-    pub fn decompression(self, result: &mut Vec<u8>) {
-        zstd::stream::copy_decode(self.1, result).unwrap();
+    pub fn decompression(self, result: &mut Vec<u8>) -> io::Result<()> {
+        match zstd::stream::copy_decode(self.1, result) {
+            Ok(o) => return Ok(o),
+            Err(e) => {
+                fs::remove_file(self.0.clone().as_path()).ok();
+                return Err(e);
+            }
+        }
     }
 }
 
 impl<'r> Responder<'r> for CacheFile {
     fn respond_to(self, req: &Request) -> response::Result<'r> {
         let mut result = Vec::new();
-        self.decompression(&mut result);
-        let response = result.respond_to(req)?;
-        Ok(response)
+        match self.decompression(&mut result) {
+            Ok(_) => {
+                let response = result.respond_to(req)?;
+                Ok(response)
+            }
+            Err(_) => {
+                return Err(Status::NotFound);
+            }
+        }
     }
 }
 
