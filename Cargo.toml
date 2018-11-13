@@ -23,6 +23,7 @@ libc = "0.2.43"
 tokio = "0.1.11"
 futures = "0.1.25"
 walkdir = "2.2.6"
+tempfile = "3.0.4"
 
 [lib]
 name = "greenhouse"
