@@ -30,6 +30,7 @@ extern crate log;
 extern crate slog;
 extern crate sloggers;
 extern crate snap;
+extern crate tempfile;
 extern crate walkdir;
 extern crate zstd;
 
