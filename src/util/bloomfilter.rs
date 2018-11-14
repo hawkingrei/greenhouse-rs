@@ -228,5 +228,5 @@ fn bloom_test_equal() {
 #[test]
 fn bloom_test_equal2() {
     let b: Bloom<u64> = Bloom::new(9585064, 1000000);
-    assert_eq!(b.number_of_bits(), 9585064);
+    assert_eq!(b.number_of_bits(), 9585064*8);
 }
