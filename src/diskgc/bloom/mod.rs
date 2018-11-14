@@ -11,9 +11,7 @@ pub struct bloomgc {
 
 impl bloomgc {
     pub fn new(rx: Receiver<PathBuf>, p: PathBuf) -> bloomgc {
-        bloomgc {
-            receiver: rx,
-        }
+        bloomgc { receiver: rx }
     }
 
     pub fn serve(self) {

@@ -29,10 +29,10 @@ impl<T> Bloom<T> {
         let bitmap = BitVec::from_elem(bitmap_bits as usize, false);
         let sips = [Self::sip_new(), Self::sip_new()];
         Self {
-            bitmap: bitmap,
-            bitmap_bits: bitmap_bits,
-            k_num: k_num,
-            sips: sips,
+            bitmap,
+            bitmap_bits,
+            k_num,
+            sips,
             _phantom: PhantomData,
         }
     }
@@ -217,4 +217,10 @@ fn bloom_test_load() {
         original.sip_keys(),
     );
     assert!(cloned.check(&key) == true);
+}
+
+#[test]
+fn bloom_test_equal() {
+    let b: Bloom<u64> = Bloom::new_for_fp_rate(1000000, 0.01);
+    assert_eq!(b.number_of_bits(), 9585064);
 }

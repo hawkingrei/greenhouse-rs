@@ -23,10 +23,10 @@ use tokio::runtime::Runtime;
 
 use greenhouse::config::CachePath;
 use greenhouse::disk::get_disk_usage_prom;
+use greenhouse::diskgc::bloom::bloomgc;
 use greenhouse::diskgc::lazy;
 use greenhouse::router;
 use greenhouse::util::rocket_log::{SlogFairing, SyncLogger};
-use greenhouse::diskgc::bloom::bloomgc;
 
 fn main() {
     let matches = App::new("greenhouse")
@@ -136,8 +136,7 @@ fn main() {
         Ok(())
     }));
 
-
-    let bloomgc = bloomgc::new(rx,pathbuf);
+    let bloomgc = bloomgc::new(rx, pathbuf);
     rt.spawn(lazy(move || {
         bloomgc.serve();
         Ok(())
