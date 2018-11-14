@@ -18,8 +18,8 @@ pub mod worker;
 use std::thread;
 
 pub fn get_tag_from_thread_name() -> Option<String> {
-        thread::current()
-                .name()
-                .and_then(|name| name.split("::").skip(1).last())
-                .map(From::from)
+    thread::current()
+        .name()
+        .and_then(|name| name.split("::").skip(1).last())
+        .map(From::from)
 }

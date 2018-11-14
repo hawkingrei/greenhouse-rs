@@ -99,27 +99,28 @@ impl<T> Sender<T> {
     #[inline]
     pub fn send(&self, t: T) -> Result<(), SendError<T>> {
         if !self.state.is_receiver_closed() {
-            match self.sender.send(t) {
-                Ok(_) => {
+            self.sender
+                .send(t)
+                .map(|_| {
                     self.notify();
-                    return Ok(());
-                }
-                Err(e) => return Err(SendError(e.into_inner())),
-            };
+                    ()
+                })
+                .map_err(|err| SendError(err.into_inner()))
+        } else {
+            Err(SendError(t))
         }
-        Err(SendError(t))
     }
 
     #[inline]
     pub fn try_send(&self, t: T) -> Result<(), TrySendError<T>> {
         if !self.state.is_receiver_closed() {
-            match self.sender.try_send(t) {
-                Ok(_) => {
+            self.sender
+                .try_send(t)
+                .map(|_| {
                     self.notify();
-                    return Ok(());
-                }
-                Err(e) => return Err(TrySendError::Full(e.into_inner())),
-            };
+                    ()
+                })
+                .map_err(|err| TrySendError::Full(err.into_inner()))
         } else {
             Err(TrySendError::Disconnected(t))
         }
@@ -129,41 +130,25 @@ impl<T> Sender<T> {
 impl<T> Receiver<T> {
     #[inline]
     pub fn recv(&self) -> Result<T, RecvError> {
-        match self.receiver.recv() {
-            Ok(t) => Ok(t),
-            Err(_) => Err(RecvError),
-        }
+        self.receiver.recv().or(Err(RecvError))
     }
 
     #[inline]
     pub fn try_recv(&self) -> Result<T, TryRecvError> {
-        match self.receiver.try_recv() {
-            Ok(t) => Ok(t),
-            Err(_) => {
-                if !self.state.is_sender_closed() {
-                    return Err(TryRecvError::Empty);
-                }
-                match self.receiver.try_recv() {
-                    Ok(t) => return Ok(t),
-                    Err(_) => return Err(TryRecvError::Disconnected),
-                }
-            }
-        }
+        self.receiver.try_recv().map_err(|err| match err {
+            crossbeam_channel::TryRecvError::Empty => TryRecvError::Empty,
+            crossbeam_channel::TryRecvError::Disconnected => TryRecvError::Disconnected,
+        })
     }
 
     #[inline]
     pub fn recv_timeout(&self, timeout: Duration) -> Result<T, RecvTimeoutError> {
-        match self.receiver.recv_timeout(timeout) {
-            Ok(t) => return Ok(t),
-            Err(e) => match e {
-                crossbeam_channel::RecvTimeoutError::Timeout => {
-                    return Err(RecvTimeoutError::Timeout)
-                }
-                crossbeam_channel::RecvTimeoutError::Disconnected => {
-                    return Err(RecvTimeoutError::Disconnected)
-                }
-            },
-        }
+        self.receiver
+            .recv_timeout(timeout)
+            .map_err(|err| match err {
+                crossbeam_channel::RecvTimeoutError::Timeout => RecvTimeoutError::Timeout,
+                crossbeam_channel::RecvTimeoutError::Disconnected => RecvTimeoutError::Disconnected,
+            })
     }
 }
 
