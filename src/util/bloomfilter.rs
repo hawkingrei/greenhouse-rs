@@ -233,5 +233,5 @@ fn bloom_test_equal2() {
 
 #[test]
 fn bloom_test_equal2() {
-    assert_eq!(Bloom::compute_bitmap_size(9585064, 1000000), 9585064*8);
+    assert_eq!(Bloom::compute_bitmap_size(9585064, 1000000.0), 9585064*8);
 }
