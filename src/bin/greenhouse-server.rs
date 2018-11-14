@@ -6,6 +6,7 @@ extern crate greenhouse;
 extern crate rocket;
 
 use clap::{App, Arg};
+use crossbeam_channel;
 use futures::future::lazy;
 use futures::Future;
 use rocket::config::LoggingLevel;
@@ -16,6 +17,7 @@ use sloggers::{
     Build,
 };
 use std::path::Path;
+use std::path::PathBuf;
 use std::{thread, time};
 use tokio::runtime::Runtime;
 
@@ -24,6 +26,7 @@ use greenhouse::disk::get_disk_usage_prom;
 use greenhouse::diskgc::lazy;
 use greenhouse::router;
 use greenhouse::util::rocket_log::{SlogFairing, SyncLogger};
+use greenhouse::diskgc::bloom::bloomgc;
 
 fn main() {
     let matches = App::new("greenhouse")
@@ -79,6 +82,8 @@ fn main() {
 
     let fairing = SlogFairing::new(logger.clone());
 
+    let (tx, rx) = crossbeam_channel::unbounded::<PathBuf>();
+
     rt.spawn(lazy(move || {
         println!("port was passed in: {}", _cache_port);
         let config = Config::build(Environment::Staging)
@@ -91,6 +96,7 @@ fn main() {
         rocket::custom(config)
             .attach(fairing.clone())
             .manage(CachePath(_dir.to_string()))
+            .manage(tx)
             .mount("/", routes![router::upload, router::get, router::head])
             .launch();
         Ok(())
@@ -120,13 +126,20 @@ fn main() {
         Ok(())
     }));
     let pathbuf = Path::new(&gcpath).to_path_buf();
-    let gc = lazy::Lazygc::new(pathbuf.as_path(), 20.0, 30.0);
+    let gc = lazy::Lazygc::new(pathbuf.as_path(), 5.0, 20.0);
     let gc_millis = time::Duration::from_millis(10000);
     rt.spawn(lazy(move || {
         loop {
             gc.clone().rocket();
             thread::sleep(gc_millis);
         }
+        Ok(())
+    }));
+
+
+    let bloomgc = bloomgc::new(rx,pathbuf);
+    rt.spawn(lazy(move || {
+        bloomgc.serve();
         Ok(())
     }));
     rt.shutdown_on_idle().wait().unwrap();
