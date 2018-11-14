@@ -221,17 +221,17 @@ fn bloom_test_load() {
 
 #[test]
 fn bloom_test_equal() {
-    let b: Bloom<u64> = Bloom::new_for_fp_rate(1000000, 0.01);
-    assert_eq!(b.number_of_bits(), 9585064);
+    let b: Bloom<u64> = Bloom::new_for_fp_rate(500000, 0.1);
+    assert_eq!(b.number_of_bits(), 2396272);
 }
 
 #[test]
 fn bloom_test_equal2() {
-    let b: Bloom<u64> = Bloom::new(9585064, 1000000);
-    assert_eq!(b.number_of_bits(), 9585064*8);
+    let b: Bloom<u64> = Bloom::new(2396272, 500000);
+    assert_eq!(b.number_of_bits(), 2396272 * 8);
 }
 
 #[test]
 fn bloom_test_equal3() {
-    assert_eq!(Bloom::compute_bitmap_size(9585064, 1000000.0), 9585064*8);
+    assert_eq!(Bloom::<u64>::compute_bitmap_size(500000, 0.1), 2396272 / 8);
 }

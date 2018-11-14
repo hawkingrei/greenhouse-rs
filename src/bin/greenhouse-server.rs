@@ -135,8 +135,7 @@ fn main() {
         }
         Ok(())
     }));
-
-    let bloomgc = bloomgc::new(rx, pathbuf);
+    let mut bloomgc = bloomgc::new(rx, pathbuf);
     rt.spawn(lazy(move || {
         bloomgc.serve();
         Ok(())

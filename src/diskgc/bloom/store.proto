@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package bloom;
+
+message Record {
+	Timestamp time = 1;
+	bytes data  = 2;
+	uint64 totalPut = 3;
+}
