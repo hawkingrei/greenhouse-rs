@@ -205,7 +205,7 @@ impl OverwriteFile for PosixOverwriteFile {
         } else {
             unsafe {
                 loop {
-                    file = libc::fdopen(fd, b"r".as_ptr() as *const c_char);
+                    file = libc::fdopen(fd, b"rw".as_ptr() as *const c_char);
                     if !(file == 0 as *mut libc::FILE && *errno_location() as i32 == libc::EINTR) {
                         break;
                     }
@@ -263,6 +263,20 @@ impl OverwriteFile for PosixOverwriteFile {
         }
     }
     fn write(&mut self, data: Vec<u8>) -> io::Result<()> {
-        return Ok(());
+        unsafe {
+            if libc::ftruncate(self.fd_, 0) < 0 {
+                return Err(io::Error::new(ErrorKind::Interrupted, "fail to ftruncate"));
+            }
+            if libc::fwrite(
+                data.as_ptr() as *mut libc::c_void,
+                data.len(),
+                1,
+                self.file_,
+            ) < 0
+            {
+                return Err(io::Error::new(ErrorKind::Interrupted, "fail to fwrite"));
+            }
+            return Ok(());
+        }
     }
 }
