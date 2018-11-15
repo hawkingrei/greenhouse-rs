@@ -89,7 +89,6 @@ fn main() {
         let config = Config::build(Environment::Staging)
             .address(_host)
             .port(_cache_port)
-            .keep_alive(90)
             .limits(Limits::new().limit("forms", 1024 * 1024 * 512))
             .log_level(LoggingLevel::Off)
             .finalize()
