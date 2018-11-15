@@ -36,17 +36,13 @@ fn get_entries<P: AsRef<Path>>(path: P) -> Vec<EntryInfo> {
     let mut result: Vec<EntryInfo> = Vec::new();
     for entry in WalkDir::new(path).into_iter().filter_map(|e| e.ok()) {
         let p = entry.path();
-        println!("into {:?}", p.clone());
         let meta = match fs::metadata(p.clone()) {
             Ok(meta) => meta,
             Err(e) => {
-                println!("{}", e);
                 continue;
             }
         };
         if meta.is_file() {
-            println!("ok push {}", p.clone().display());
-
             result.push(EntryInfo {
                 path: p.to_path_buf(),
                 last_access: meta.ctime(),
@@ -81,7 +77,6 @@ impl Lazygc {
     pub fn rocket(self) {
         match disk::get_disk_usage(self.path.as_path()) {
             Some((rate, _, _)) => {
-                println!("gc {} {}", rate, self.min_percent_block_free);
                 if rate < self.min_percent_block_free {
                     println!("startgc {:?}", self.path.as_path());
                     let entries = get_entries(self.path.as_path());
@@ -99,14 +94,12 @@ impl Lazygc {
                                 );
                             }
                             Err(e) => {
-                                println!("{}", e);
                                 continue;
                             }
                         };
                         match fs::remove_file(entry.path.as_path()) {
                             Ok(_) => {}
                             Err(e) => {
-                                println!("{}", e);
                                 continue;
                             }
                         }
@@ -114,7 +107,6 @@ impl Lazygc {
 
                         match disk::get_disk_usage(self.path.as_path()) {
                             Some((rate, _, _)) => {
-                                println!("startgc {} {}", rate, self.stop_percent_block);
                                 if rate >= self.stop_percent_block {
                                     break;
                                 }

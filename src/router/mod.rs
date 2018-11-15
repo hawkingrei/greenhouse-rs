@@ -1,5 +1,6 @@
 pub mod metrics_router;
 
+use crate::config;
 use crate::config::CachePath;
 use crate::disk::CacheFile;
 use crate::util::metrics;
@@ -11,6 +12,7 @@ use std::io;
 use std::io::{Error, ErrorKind};
 use std::path::Path;
 use std::path::PathBuf;
+use std::sync::atomic::Ordering;
 use tempfile::NamedTempFile;
 
 #[get("/<file..>")]
@@ -75,6 +77,7 @@ pub fn upload(
     encoder.finish().unwrap();
     fs::rename(wfile.path(), together.clone()).unwrap();
     rx.send(file).ok();
+    config::total_put.fetch_add(1, Ordering::SeqCst);
     return Ok(together.to_str().unwrap().to_string());
 }
 

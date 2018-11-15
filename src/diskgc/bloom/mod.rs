@@ -1,10 +1,18 @@
+pub mod spb;
 pub mod store;
 
-use crate::util::bloomfilter::Bloom;
+use chrono::offset::Local;
 use crossbeam_channel::after;
 use crossbeam_channel::Receiver;
+use protobuf::well_known_types::Timestamp;
+use protobuf::Message;
 use std::path::{Path, PathBuf};
+use std::sync::atomic::Ordering;
 use std::time::Duration;
+
+use crate::config;
+use crate::diskgc::bloom::spb::Record;
+use crate::util::bloomfilter::Bloom;
 
 const items_count: usize = 500000;
 const fp_p: f64 = 0.1;
@@ -32,7 +40,15 @@ impl bloomgc {
                         Err(_) => {},
                     };
                 },
-                recv(timeout) -> _ => println!("save the bloomgc"),
+                recv(timeout) -> _ => {
+                    let mut rec = Record::new();
+                    let mut now:Timestamp = Timestamp::new();
+                    now.set_seconds(Local::now().timestamp());
+                    rec.set_time(now);
+                    rec.set_data(self.bloomfilter.bitmap());
+                    rec.set_totalPut(config::total_put.load(Ordering::SeqCst) as u64);
+                    rec.write_to_bytes();
+                },
             }
         }
     }

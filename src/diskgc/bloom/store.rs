@@ -1,3 +1,4 @@
+use super::spb::Record;
 use std::path::PathBuf;
 
 #[derive(Debug)]
@@ -13,4 +14,8 @@ pub fn new_gc_store(p: PathBuf) -> gc_store {
         _today_fd_: 0,
         _all_fd: 0,
     }
+}
+
+impl gc_store {
+    pub fn save_today_bloom(r: Vec<u8>) {}
 }

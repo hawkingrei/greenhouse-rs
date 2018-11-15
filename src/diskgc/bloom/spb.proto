@@ -2,8 +2,10 @@ syntax = "proto3";
 
 package bloom;
 
+import "google/protobuf/timestamp.proto";
+
 message Record {
-	Timestamp time = 1;
+	google.protobuf.Timestamp time = 1;
 	bytes data  = 2;
 	uint64 totalPut = 3;
 }

@@ -1,3 +1,8 @@
+pub mod io_posix;
+
+use std::io;
+use std::path::PathBuf;
+
 use crate::env;
 use crate::util::status::State;
 
@@ -125,4 +130,10 @@ pub trait SequentialFile<RHS = Self>: Sized {
     fn use_direct_io(&self) -> bool {
         false
     }
+}
+
+pub trait OverwriteFile<RHS = Self>: Sized {
+    fn init(filename: PathBuf, options: env::EnvOptions) -> io::Result<()>;
+    fn read(&mut self) -> io::Result<Vec<u8>>;
+    fn write(&mut self, data: Vec<u8>) -> io::Result<()>;
 }
