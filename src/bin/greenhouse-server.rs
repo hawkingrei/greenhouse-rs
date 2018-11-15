@@ -10,7 +10,7 @@ use crossbeam_channel;
 use futures::future::lazy;
 use futures::Future;
 use rocket::config::LoggingLevel;
-use rocket::config::{Config, Environment};
+use rocket::config::{Config, Environment, Limits};
 use sloggers::{
     terminal::{Destination, TerminalLoggerBuilder},
     types::Severity,
@@ -90,7 +90,7 @@ fn main() {
             .address(_host)
             .port(_cache_port)
             .keep_alive(90)
-            .limits(1024*1024*512)
+            .limits(Limits::new().limit("forms", 1024 * 1024 * 512))
             .log_level(LoggingLevel::Off)
             .finalize()
             .unwrap();
