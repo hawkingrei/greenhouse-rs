@@ -1,5 +1,6 @@
 use crate::env;
 use crate::env::k_default_page_size;
+use crate::env::EnvOptions;
 use crate::env::OverwriteFile;
 use crate::env::{SequentialFile, WritableFile};
 use crate::util::status::{Code, State};
@@ -148,18 +149,8 @@ pub struct PosixOverwriteFile {
     file_: *mut libc::FILE,
 }
 
-impl Default for PosixOverwriteFile {
-    fn default() -> PosixOverwriteFile {
-        PosixOverwriteFile {
-            filename_: PathBuf::from(""),
-            fd_: 0,
-            file_: 0 as *mut libc::FILE,
-        }
-    }
-}
-
-impl OverwriteFile for PosixOverwriteFile {
-    fn init(&mut self, filename: PathBuf, options: env::EnvOptions) -> io::Result<()> {
+impl PosixOverwriteFile {
+    fn new(filename: PathBuf, options: env::EnvOptions) -> io::Result<PosixOverwriteFile> {
         let mut fd = -1;
         let mut flag = libc::O_RDWR | libc::O_CREAT;
         let mut file = 0 as *mut libc::FILE;
@@ -219,11 +210,25 @@ impl OverwriteFile for PosixOverwriteFile {
                 }
             }
         }
-        self.filename_ = filename;
-        self.fd_ = fd;
-        self.file_ = file;
-        return Ok(());
+        return Ok(PosixOverwriteFile {
+            filename_: filename,
+            fd_: fd,
+            file_: file,
+        });
     }
+}
+
+impl Default for PosixOverwriteFile {
+    fn default() -> PosixOverwriteFile {
+        PosixOverwriteFile {
+            filename_: PathBuf::from(""),
+            fd_: 0,
+            file_: 0 as *mut libc::FILE,
+        }
+    }
+}
+
+impl OverwriteFile for PosixOverwriteFile {
     fn read(&mut self) -> io::Result<Vec<u8>> {
         unsafe {
             let size = libc::lseek(self.file_ as libc::c_int, 0, libc::SEEK_END);
@@ -279,4 +284,12 @@ impl OverwriteFile for PosixOverwriteFile {
             return Ok(());
         }
     }
+}
+
+#[test]
+fn test_overwrite_file() {
+    let mut op: EnvOptions = EnvOptions::default();
+    let mut of: PosixOverwriteFile = PosixOverwriteFile::new(PathBuf::from("./test"), op).unwrap();
+    //of.write("bors".as_bytes().to_vec());
+    //assert_eq!(of.read().unwrap(), "bors".as_bytes().to_vec());
 }
