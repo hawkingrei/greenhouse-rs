@@ -1,17 +1,19 @@
 use crate::env;
 use crate::env::k_default_page_size;
+use crate::env::OverwriteFile;
 use crate::env::{SequentialFile, WritableFile};
 use crate::util::status::{Code, State};
-use crate::env::OverwriteFile;
 
 use libc;
 use libc::c_int;
+use log::{error, warn};
 use std::ffi::CString;
+use std::io;
+use std::io::ErrorKind;
 use std::os::raw::c_char;
-use std::usize;
 use std::path::Path;
 use std::path::PathBuf;
-use std::io;
+use std::usize;
 
 pub fn clearerr(stream: *mut libc::FILE) {
     extern "C" {
@@ -157,11 +159,108 @@ impl Default for PosixOverwriteFile {
 }
 
 impl OverwriteFile for PosixOverwriteFile {
-    fn init(filename: PathBuf, options: env::EnvOptions) -> io::Result<()> {
+    fn init(&mut self, filename: PathBuf, options: env::EnvOptions) -> io::Result<()> {
+        let mut fd = -1;
+        let mut flag = libc::O_RDWR | libc::O_CREAT;
+        let mut file = 0 as *mut libc::FILE;
+        loop {
+            unsafe {
+                fd = libc::open(
+                    CString::from_vec_unchecked(
+                        filename.as_path().to_str().unwrap().as_bytes().to_vec(),
+                    )
+                    .as_ptr(),
+                    flag,
+                    0o644,
+                );
+                if !(fd < 0 && *errno_location() as i32 == libc::EINTR) {
+                    error!("fail to open file");
+                    break;
+                }
+                warn!("{} {} {}", "wait for open", fd, *errno_location());
+            }
+        }
+        if fd < 0 {
+            return Err(io::Error::new(
+                ErrorKind::Interrupted,
+                format!(
+                    "While opening a file for sequentially reading: {:?}",
+                    filename
+                ),
+            ));
+        }
+        SetFD_CLOEXEC(fd, options.clone());
+        if options.use_direct_reads && !options.use_mmap_reads {
+            #[cfg(target_os = "macos")]
+            unsafe {
+                if libc::fcntl(fd, libc::F_NOCACHE, 1) == -1 {
+                    libc::close(fd);
+                    return Err(io::Error::new(
+                        ErrorKind::Interrupted,
+                        format!("While fcntl NoCache: {:?}", filename),
+                    ));
+                    //IOError("While fcntl NoCache", fname, errno);
+                }
+            }
+        } else {
+            unsafe {
+                loop {
+                    file = libc::fdopen(fd, b"r".as_ptr() as *const c_char);
+                    if !(file == 0 as *mut libc::FILE && *errno_location() as i32 == libc::EINTR) {
+                        break;
+                    }
+                }
+                if file == 0 as *mut libc::FILE {
+                    libc::close(fd);
+                    return Err(io::Error::new(
+                        ErrorKind::Interrupted,
+                        format!("While opening a file for sequentially read: {:?}", filename),
+                    ));
+                }
+            }
+        }
+        self.filename_ = filename;
+        self.fd_ = fd;
+        self.file_ = file;
         return Ok(());
     }
     fn read(&mut self) -> io::Result<Vec<u8>> {
-        return Ok(vec![1, 2]);
+        unsafe {
+            let size = libc::lseek(self.file_ as libc::c_int, 0, libc::SEEK_END);
+            let mut r = 0;
+            let mut scratch: Vec<u8> = vec![0; size as usize];
+            let mut result: Vec<u8> = Vec::new();
+
+            r = posix_fread_unlocked(
+                scratch.as_mut_ptr() as *mut libc::c_void,
+                1 as libc::size_t,
+                size as libc::size_t,
+                self.file_,
+            );
+
+            if (libc::ferror(self.file_) > 0
+                && ((*errno_location()) as i32 == libc::EINTR)
+                && r == 0)
+            {
+                return Err(io::Error::new(
+                    ErrorKind::Interrupted,
+                    format!("While reading file sequentially: {:?}", self.filename_),
+                ));
+            }
+            result.extend_from_slice(scratch.as_slice());
+            result.split_off(r);
+            if r < size as usize {
+                if libc::feof(self.file_) == 0 {
+                    return Err(io::Error::new(
+                        ErrorKind::Interrupted,
+                        format!("While reading file sequentially: {:?}", self.filename_),
+                    ));
+                } else {
+                    clearerr(self.file_);
+                }
+            }
+            return Ok(result);
+        }
     }
     fn write(&mut self, data: Vec<u8>) -> io::Result<()> {
         return Ok(());

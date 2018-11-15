@@ -133,7 +133,7 @@ pub trait SequentialFile<RHS = Self>: Sized {
 }
 
 pub trait OverwriteFile<RHS = Self>: Sized {
-    fn init(filename: PathBuf, options: env::EnvOptions) -> io::Result<()>;
+    fn init(&mut self, filename: PathBuf, options: env::EnvOptions) -> io::Result<()>;
     fn read(&mut self) -> io::Result<Vec<u8>>;
     fn write(&mut self, data: Vec<u8>) -> io::Result<()>;
 }
