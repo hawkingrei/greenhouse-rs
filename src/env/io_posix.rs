@@ -150,8 +150,10 @@ pub struct PosixOverwriteFile {
     file_: *mut libc::FILE,
 }
 
+impl !Sync for PosixOverwriteFile {}
+
 impl PosixOverwriteFile {
-    fn new(filename: PathBuf, options: env::EnvOptions) -> io::Result<PosixOverwriteFile> {
+    pub fn new(filename: PathBuf, options: env::EnvOptions) -> io::Result<PosixOverwriteFile> {
         let mut fd = -1;
         let mut flag = libc::O_RDWR | libc::O_CREAT;
         let mut file = 0 as *mut libc::FILE;

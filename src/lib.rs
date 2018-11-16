@@ -3,6 +3,7 @@
 #![feature(type_ascription)]
 #![feature(custom_attribute)]
 #![feature(proc_macro_hygiene, decl_macro)]
+#![feature(optin_builtin_traits)]
 #![cfg_attr(feature = "clippy", feature(plugin))]
 #![cfg_attr(feature = "clippy", plugin(clippy))]
 #![recursion_limit = "128"]
