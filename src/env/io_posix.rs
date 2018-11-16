@@ -290,6 +290,6 @@ impl OverwriteFile for PosixOverwriteFile {
 fn test_overwrite_file() {
     let mut op: EnvOptions = EnvOptions::default();
     let mut of: PosixOverwriteFile = PosixOverwriteFile::new(PathBuf::from("./test"), op).unwrap();
-    //of.write("bors".as_bytes().to_vec());
+    of.write("bors".as_bytes().to_vec());
     //assert_eq!(of.read().unwrap(), "bors".as_bytes().to_vec());
 }
