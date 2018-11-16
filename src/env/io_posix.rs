@@ -11,6 +11,7 @@ use log::{error, warn};
 use std::ffi::CString;
 use std::io;
 use std::io::ErrorKind;
+use std::mem;
 use std::os::raw::c_char;
 use std::path::Path;
 use std::path::PathBuf;
@@ -231,15 +232,17 @@ impl Default for PosixOverwriteFile {
 impl OverwriteFile for PosixOverwriteFile {
     fn read(&mut self) -> io::Result<Vec<u8>> {
         unsafe {
-            let size = libc::lseek(self.file_ as libc::c_int, 0, libc::SEEK_END);
+            let mut dst: libc::stat = mem::uninitialized();
+            libc::fstat(self.fd_, &mut dst as *mut libc::stat);
+            let size = dst.st_size;
             let mut r = 0;
             let mut scratch: Vec<u8> = vec![0; size as usize];
-            let mut result: Vec<u8> = Vec::new();
 
+            libc::lseek(self.fd_,0,libc::SEEK_SET);
             r = posix_fread_unlocked(
                 scratch.as_mut_ptr() as *mut libc::c_void,
-                1 as libc::size_t,
                 size as libc::size_t,
+                1 as libc::size_t,
                 self.file_,
             );
 
@@ -252,33 +255,19 @@ impl OverwriteFile for PosixOverwriteFile {
                     format!("While reading file sequentially: {:?}", self.filename_),
                 ));
             }
-            result.extend_from_slice(scratch.as_slice());
-            result.split_off(r);
-            if r < size as usize {
-                if libc::feof(self.file_) == 0 {
-                    return Err(io::Error::new(
-                        ErrorKind::Interrupted,
-                        format!("While reading file sequentially: {:?}", self.filename_),
-                    ));
-                } else {
-                    clearerr(self.file_);
-                }
-            }
-            return Ok(result);
+            return Ok(scratch);
         }
     }
+
     fn write(&mut self, data: Vec<u8>) -> io::Result<()> {
         unsafe {
             if libc::ftruncate(self.fd_, 0) < 0 {
                 return Err(io::Error::new(ErrorKind::Interrupted, "fail to ftruncate"));
             }
-            if libc::fwrite(
-                data.as_ptr() as *mut libc::c_void,
-                data.len(),
-                1,
-                self.file_,
-            ) < 0
-            {
+            if  libc::lseek(self.fd_,0,libc::SEEK_SET) < 0 {
+                 return Err(io::Error::new(ErrorKind::Interrupted, "fail to lseek"));
+            }
+            if libc::write(self.fd_, data.as_ptr() as *const libc::c_void, data.len()) < 0 {
                 return Err(io::Error::new(ErrorKind::Interrupted, "fail to fwrite"));
             }
             return Ok(());
@@ -290,6 +279,8 @@ impl OverwriteFile for PosixOverwriteFile {
 fn test_overwrite_file() {
     let mut op: EnvOptions = EnvOptions::default();
     let mut of: PosixOverwriteFile = PosixOverwriteFile::new(PathBuf::from("./test"), op).unwrap();
-    of.write("bors".as_bytes().to_vec());
-    //assert_eq!(of.read().unwrap(), "bors".as_bytes().to_vec());
+    of.write("abc".as_bytes().to_vec()).unwrap();
+    assert_eq!(of.read().unwrap(), "abc".as_bytes().to_vec());
+    of.write("qwe".as_bytes().to_vec()).unwrap();
+    assert_eq!(of.read().unwrap(), "qwe".as_bytes().to_vec());
 }
