@@ -253,7 +253,7 @@ impl Drop for PosixOverwriteFile {
 }
 
 impl OverwriteFile for PosixOverwriteFile {
-    fn read(&mut self) -> io::Result<Vec<u8>> {
+    fn read(&self) -> io::Result<Vec<u8>> {
         unsafe {
             let mut dst: libc::stat = mem::uninitialized();
             libc::fstat(self.fd_, &mut dst as *mut libc::stat);

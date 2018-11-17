@@ -25,4 +25,8 @@ impl gc_store {
     pub fn save_today_bloom(&mut self, r: Vec<u8>) -> io::Result<()> {
         Arc::get_mut(&mut self._today_fd_).unwrap().write(r)
     }
+
+    pub fn get_today_bloom(self) -> io::Result<Vec<u8>> {
+        self._today_fd_.read()
+    }
 }
