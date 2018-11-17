@@ -1,9 +1,9 @@
-use crate::env::EnvOptions;
-use crate::env::io_posix::PosixOverwriteFile;
-use crate::env::OverwriteFile;
 use super::spb::Record;
-use std::path::PathBuf;
+use crate::env::io_posix::PosixOverwriteFile;
+use crate::env::EnvOptions;
+use crate::env::OverwriteFile;
 use std::io;
+use std::path::PathBuf;
 use std::sync::Arc;
 
 #[derive(Debug)]
@@ -22,7 +22,7 @@ pub fn new_gc_store(p: PathBuf) -> gc_store {
 }
 
 impl gc_store {
-    pub fn save_today_bloom(&mut self,r: Vec<u8>) -> io::Result<()> {
+    pub fn save_today_bloom(&mut self, r: Vec<u8>) -> io::Result<()> {
         Arc::get_mut(&mut self._today_fd_).unwrap().write(r)
     }
 }

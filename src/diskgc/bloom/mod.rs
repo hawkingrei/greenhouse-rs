@@ -12,9 +12,9 @@ use std::time::Duration;
 
 use crate::config;
 use crate::diskgc::bloom::spb::Record;
-use crate::util::bloomfilter::Bloom;
 use crate::diskgc::bloom::store::gc_store;
 use crate::diskgc::bloom::store::new_gc_store;
+use crate::util::bloomfilter::Bloom;
 
 const items_count: usize = 500000;
 const fp_p: f64 = 0.1;
@@ -52,7 +52,7 @@ impl bloomgc {
                     rec.set_data(self.bloomfilter.bitmap());
                     rec.set_totalPut(config::total_put.load(Ordering::SeqCst) as u64);
                     let result = rec.write_to_bytes().unwrap();
-                    
+
                 },
             }
         }

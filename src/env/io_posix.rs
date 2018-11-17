@@ -9,6 +9,7 @@ use libc;
 use libc::c_int;
 use log::{error, warn};
 use std::ffi::CString;
+use std::fmt;
 use std::io;
 use std::io::ErrorKind;
 use std::mem;
@@ -16,6 +17,11 @@ use std::os::raw::c_char;
 use std::path::Path;
 use std::path::PathBuf;
 use std::usize;
+
+pub struct FILE(*mut libc::FILE);
+
+unsafe impl Send for FILE {}
+unsafe impl Sync for FILE {}
 
 pub fn clearerr(stream: *mut libc::FILE) {
     extern "C" {
@@ -143,14 +149,17 @@ fn get_flag_for_posix_sequential_file() -> i32 {
     libc::O_DIRECT
 }
 
-#[derive(Debug)]
 pub struct PosixOverwriteFile {
     filename_: PathBuf,
     fd_: i32,
-    file_: *mut libc::FILE,
+    file_: FILE,
 }
 
-impl !Sync for PosixOverwriteFile {}
+impl fmt::Debug for PosixOverwriteFile {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self.filename_)
+    }
+}
 
 impl PosixOverwriteFile {
     pub fn new(filename: PathBuf, options: env::EnvOptions) -> io::Result<PosixOverwriteFile> {
@@ -213,10 +222,11 @@ impl PosixOverwriteFile {
                 }
             }
         }
+
         return Ok(PosixOverwriteFile {
             filename_: filename,
             fd_: fd,
-            file_: file,
+            file_: FILE(file),
         });
     }
 }
@@ -226,8 +236,19 @@ impl Default for PosixOverwriteFile {
         PosixOverwriteFile {
             filename_: PathBuf::from(""),
             fd_: 0,
-            file_: 0 as *mut libc::FILE,
+            file_: FILE(0 as *mut libc::FILE),
         }
+    }
+}
+
+impl Drop for PosixOverwriteFile {
+    fn drop(&mut self) {
+        // Note that errors are ignored when closing a file descriptor. The
+        // reason for this is that if an error occurs we don't actually know if
+        // the file descriptor was closed or not, and if we retried (for
+        // something like EINTR), we might close another valid file descriptor
+        // (opened after we closed ours.
+        let _ = unsafe { libc::close(self.fd_) };
     }
 }
 
@@ -240,15 +261,15 @@ impl OverwriteFile for PosixOverwriteFile {
             let mut r = 0;
             let mut scratch: Vec<u8> = vec![0; size as usize];
 
-            libc::lseek(self.fd_,0,libc::SEEK_SET);
+            libc::lseek(self.fd_, 0, libc::SEEK_SET);
             r = posix_fread_unlocked(
                 scratch.as_mut_ptr() as *mut libc::c_void,
                 size as libc::size_t,
                 1 as libc::size_t,
-                self.file_,
+                self.file_.0,
             );
 
-            if (libc::ferror(self.file_) > 0
+            if (libc::ferror(self.file_.0) > 0
                 && ((*errno_location()) as i32 == libc::EINTR)
                 && r == 0)
             {
@@ -266,8 +287,8 @@ impl OverwriteFile for PosixOverwriteFile {
             if libc::ftruncate(self.fd_, 0) < 0 {
                 return Err(io::Error::new(ErrorKind::Interrupted, "fail to ftruncate"));
             }
-            if  libc::lseek(self.fd_,0,libc::SEEK_SET) < 0 {
-                 return Err(io::Error::new(ErrorKind::Interrupted, "fail to lseek"));
+            if libc::lseek(self.fd_, 0, libc::SEEK_SET) < 0 {
+                return Err(io::Error::new(ErrorKind::Interrupted, "fail to lseek"));
             }
             if libc::write(self.fd_, data.as_ptr() as *const libc::c_void, data.len()) < 0 {
                 return Err(io::Error::new(ErrorKind::Interrupted, "fail to fwrite"));
