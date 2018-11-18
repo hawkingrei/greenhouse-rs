@@ -157,7 +157,7 @@ pub struct PosixOverwriteFile {
 
 impl fmt::Debug for PosixOverwriteFile {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:?}", self.filename_)
+        write!(f, "PosixOverwriteFile: {:?}", self.filename_)
     }
 }
 
@@ -314,6 +314,12 @@ pub struct PosixAppendFile {
     file_: FILE,
     curr: usize,
     next: usize,
+}
+
+impl fmt::Debug for PosixAppendFile {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "PosixAppendFile: {:?}", self.filename_)
+    }
 }
 
 impl Default for PosixAppendFile {

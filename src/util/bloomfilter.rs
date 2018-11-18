@@ -223,6 +223,7 @@ fn bloom_test_load() {
 fn bloom_test_equal() {
     let b: Bloom<u64> = Bloom::new_for_fp_rate(500000, 0.1);
     assert_eq!(b.number_of_bits(), 2396272);
+    assert_eq!(b.bitmap().len(), 2396272 / 8);
 }
 
 #[test]

@@ -22,6 +22,7 @@ const fp_p: f64 = 0.1;
 pub struct bloomgc {
     receiver: Receiver<PathBuf>,
     bloomfilter: Bloom<PathBuf>,
+    all_bloomfilter: Vec<Bloom<PathBuf>>,
     store: gc_store,
 }
 
@@ -31,6 +32,7 @@ impl bloomgc {
             receiver: rx,
             bloomfilter: Bloom::new_for_fp_rate(items_count, fp_p),
             store: new_gc_store(p),
+            all_bloomfilter: Vec::new(),
         }
     }
 
