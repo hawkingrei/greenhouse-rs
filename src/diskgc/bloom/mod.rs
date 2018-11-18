@@ -18,6 +18,9 @@ use crate::util::bloomfilter::Bloom;
 
 const items_count: usize = 500000;
 const fp_p: f64 = 0.1;
+const number_of_bits: u64 = 2396272;
+const bitmap_size: usize = 299534;
+const number_of_hash_functions: u32 = 4;
 
 pub struct bloomgc {
     receiver: Receiver<PathBuf>,
@@ -30,7 +33,12 @@ impl bloomgc {
     pub fn new(rx: Receiver<PathBuf>, p: PathBuf) -> bloomgc {
         bloomgc {
             receiver: rx,
-            bloomfilter: Bloom::new_for_fp_rate(items_count, fp_p),
+            bloomfilter: Bloom::from_existing(
+                &[0; bitmap_size],
+                number_of_bits,
+                number_of_hash_functions,
+                [(2749812374, 12341234), (574893759834, 1298374918234)],
+            ),
             store: new_gc_store(p),
             all_bloomfilter: Vec::new(),
         }
