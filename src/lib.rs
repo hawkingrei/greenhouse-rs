@@ -1,5 +1,6 @@
 #![crate_type = "lib"]
 #![feature(plugin)]
+#![feature(int_to_from_bytes)]
 #![feature(type_ascription)]
 #![feature(custom_attribute)]
 #![feature(proc_macro_hygiene, decl_macro)]

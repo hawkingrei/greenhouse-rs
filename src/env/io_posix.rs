@@ -339,10 +339,18 @@ impl Drop for PosixAppendFile {
     }
 }
 
+impl Iterator for PosixAppendFile {
+    type Item = Vec<u8>;
+
+    fn next(&mut self) -> Option<Vec<u8>> {
+        return Some(vec![0, 0, 0, 0]);
+    }
+}
+
 impl PosixAppendFile {
     pub fn new(filename: PathBuf, options: env::EnvOptions) -> io::Result<PosixAppendFile> {
         let mut fd = -1;
-        let mut flag = libc::O_RDWR | libc::O_CREAT;
+        let mut flag = libc::O_RDWR | libc::O_CREAT | libc::O_APPEND;
         let mut file = 0 as *mut libc::FILE;
         loop {
             unsafe {
@@ -409,12 +417,18 @@ impl PosixAppendFile {
             next: 0,
         });
     }
-}
 
-impl Iterator for PosixAppendFile {
-    type Item = Vec<u8>;
-
-    fn next(&mut self) -> Option<Vec<u8>> {
-        return Some(vec![0, 0, 0, 0]);
+    fn write(&mut self, data: Vec<u8>) -> io::Result<()> {
+        let mut result: Vec<u8> = Vec::new();
+        result.append(&mut data.len().to_be_bytes().to_vec().clone());
+        result.append(&mut data.clone());
+        unsafe {
+            if libc::write(self.fd_, result.as_ptr() as *const libc::c_void, data.len()) < 0 {
+                return Err(io::Error::new(ErrorKind::Interrupted, "fail to fwrite"));
+            }
+            return Ok(());
+        }
     }
+
+    fn read(&self) -> io::Result<Vec<u8>> {}
 }
