@@ -343,7 +343,16 @@ impl Iterator for PosixAppendFile {
     type Item = Vec<u8>;
 
     fn next(&mut self) -> Option<Vec<u8>> {
-        return Some(vec![0, 0, 0, 0]);
+        let result = self.read();
+        match result {
+            Ok(r) => {
+                if r.len() == 0 {
+                    return None;
+                }
+                return Some(r);
+            }
+            Err(_) => return None,
+        }
     }
 }
 
@@ -418,17 +427,96 @@ impl PosixAppendFile {
         });
     }
 
-    fn write(&mut self, data: Vec<u8>) -> io::Result<()> {
+    pub fn write(&mut self, data: Vec<u8>) -> io::Result<()> {
         let mut result: Vec<u8> = Vec::new();
         result.append(&mut data.len().to_be_bytes().to_vec().clone());
         result.append(&mut data.clone());
         unsafe {
-            if libc::write(self.fd_, result.as_ptr() as *const libc::c_void, data.len()) < 0 {
+            if libc::write(
+                self.fd_,
+                result.as_ptr() as *const libc::c_void,
+                result.len(),
+            ) < 0
+            {
                 return Err(io::Error::new(ErrorKind::Interrupted, "fail to fwrite"));
             }
             return Ok(());
         }
     }
 
-    fn read(&self) -> io::Result<Vec<u8>> {}
+    fn read(&mut self) -> io::Result<Vec<u8>> {
+        unsafe {
+            let mut dst: libc::stat = mem::uninitialized();
+            libc::fstat(self.fd_, &mut dst as *mut libc::stat);
+            if dst.st_size == self.curr as i64 {
+                println!("good");
+                return Ok(vec![]);
+            }
+
+            let mut r = 0;
+            let mut size: [u8; 8] = [0; 8];
+            libc::lseek(self.fd_, self.curr as i64, libc::SEEK_SET);
+            r = posix_fread_unlocked(
+                size.as_mut_ptr() as *mut libc::c_void,
+                8 as libc::size_t,
+                1 as libc::size_t,
+                self.file_.0,
+            );
+            if (libc::ferror(self.file_.0) > 0
+                && ((*errno_location()) as i32 == libc::EINTR)
+                && r == 0)
+            {
+                return Err(io::Error::new(
+                    ErrorKind::Interrupted,
+                    format!("While reading file sequentially: {:?}", self.filename_),
+                ));
+            }
+
+            let dsize = usize::from_be_bytes(size);
+            let mut scratch: Vec<u8> = vec![0; dsize as usize];
+            libc::lseek(self.fd_, self.curr as i64 + 8, libc::SEEK_SET);
+            r = posix_fread_unlocked(
+                scratch.as_mut_ptr() as *mut libc::c_void,
+                dsize as libc::size_t,
+                1 as libc::size_t,
+                self.file_.0,
+            );
+            if (libc::ferror(self.file_.0) > 0
+                && ((*errno_location()) as i32 == libc::EINTR)
+                && r == 0)
+            {
+                return Err(io::Error::new(
+                    ErrorKind::Interrupted,
+                    format!("While reading file sequentially: {:?}", self.filename_),
+                ));
+            }
+            self.curr = self.curr + 8 + dsize;
+            return Ok(scratch);
+        }
+    }
+}
+
+#[test]
+fn test_append_file() {
+    let mut op: EnvOptions = EnvOptions::default();
+    let mut of: PosixAppendFile =
+        PosixAppendFile::new(PathBuf::from("./test_data/append_file_test"), op).unwrap();
+    of.write("abc".as_bytes().to_vec()).unwrap();
+    of.write("qwe".as_bytes().to_vec()).unwrap();
+    assert_eq!(of.read().unwrap(), "abc".as_bytes().to_vec());
+    assert_eq!(of.read().unwrap(), "qwe".as_bytes().to_vec());
+}
+
+#[test]
+fn test_append_file_iter() {
+    let mut op: EnvOptions = EnvOptions::default();
+    let mut of: PosixAppendFile =
+        PosixAppendFile::new(PathBuf::from("./test_data/append_file_iter_test"), op).unwrap();
+    of.write("abc".as_bytes().to_vec()).unwrap();
+    of.write("qwe".as_bytes().to_vec()).unwrap();
+    let mut result: Vec<u8> = Vec::new();
+    for mut r in of {
+        result.append(&mut r);
+    }
+    assert_eq!(result, "abcqwe".as_bytes().to_vec());
 }
