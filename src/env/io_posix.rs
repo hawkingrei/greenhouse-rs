@@ -307,3 +307,114 @@ fn test_overwrite_file() {
     of.write("qwe".as_bytes().to_vec()).unwrap();
     assert_eq!(of.read().unwrap(), "qwe".as_bytes().to_vec());
 }
+
+pub struct PosixAppendFile {
+    filename_: PathBuf,
+    fd_: i32,
+    file_: FILE,
+    curr: usize,
+    next: usize,
+}
+
+impl Default for PosixAppendFile {
+    fn default() -> PosixAppendFile {
+        PosixAppendFile {
+            filename_: PathBuf::from(""),
+            fd_: 0,
+            file_: FILE(0 as *mut libc::FILE),
+            curr: 0,
+            next: 0,
+        }
+    }
+}
+
+impl Drop for PosixAppendFile {
+    fn drop(&mut self) {
+        // Note that errors are ignored when closing a file descriptor. The
+        // reason for this is that if an error occurs we don't actually know if
+        // the file descriptor was closed or not, and if we retried (for
+        // something like EINTR), we might close another valid file descriptor
+        // (opened after we closed ours.
+        let _ = unsafe { libc::close(self.fd_) };
+    }
+}
+
+impl PosixAppendFile {
+    pub fn new(filename: PathBuf, options: env::EnvOptions) -> io::Result<PosixAppendFile> {
+        let mut fd = -1;
+        let mut flag = libc::O_RDWR | libc::O_CREAT;
+        let mut file = 0 as *mut libc::FILE;
+        loop {
+            unsafe {
+                fd = libc::open(
+                    CString::from_vec_unchecked(
+                        filename.as_path().to_str().unwrap().as_bytes().to_vec(),
+                    )
+                    .as_ptr(),
+                    flag,
+                    0o644,
+                );
+                if !(fd < 0 && *errno_location() as i32 == libc::EINTR) {
+                    error!("fail to open file");
+                    break;
+                }
+                warn!("{} {} {}", "wait for open", fd, *errno_location());
+            }
+        }
+        if fd < 0 {
+            return Err(io::Error::new(
+                ErrorKind::Interrupted,
+                format!(
+                    "While opening a file for sequentially reading: {:?}",
+                    filename
+                ),
+            ));
+        }
+        SetFD_CLOEXEC(fd, options.clone());
+        if options.use_direct_reads && !options.use_mmap_reads {
+            #[cfg(target_os = "macos")]
+            unsafe {
+                if libc::fcntl(fd, libc::F_NOCACHE, 1) == -1 {
+                    libc::close(fd);
+                    return Err(io::Error::new(
+                        ErrorKind::Interrupted,
+                        format!("While fcntl NoCache: {:?}", filename),
+                    ));
+                    //IOError("While fcntl NoCache", fname, errno);
+                }
+            }
+        } else {
+            unsafe {
+                loop {
+                    file = libc::fdopen(fd, b"rw".as_ptr() as *const c_char);
+                    if !(file == 0 as *mut libc::FILE && *errno_location() as i32 == libc::EINTR) {
+                        break;
+                    }
+                }
+                if file == 0 as *mut libc::FILE {
+                    libc::close(fd);
+                    return Err(io::Error::new(
+                        ErrorKind::Interrupted,
+                        format!("While opening a file for sequentially read: {:?}", filename),
+                    ));
+                }
+            }
+        }
+
+        return Ok(PosixAppendFile {
+            filename_: filename,
+            fd_: fd,
+            file_: FILE(file),
+            curr: 0,
+            next: 0,
+        });
+    }
+}
+
+impl Iterator for PosixAppendFile {
+    type Item = Vec<u8>;
+
+    fn next(&mut self) -> Option<Vec<u8>> {
+        return Some(vec![0, 0, 0, 0]);
+    }
+}
