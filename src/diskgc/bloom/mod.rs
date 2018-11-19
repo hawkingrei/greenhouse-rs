@@ -1,8 +1,10 @@
 pub mod spb;
 pub mod store;
 
+use chrono;
 use chrono::offset::Local;
-use crossbeam_channel::after;
+use chrono::prelude::*;
+use crossbeam_channel::tick;
 use crossbeam_channel::Receiver;
 use protobuf::well_known_types::Timestamp;
 use protobuf::Message;
@@ -37,26 +39,37 @@ impl bloomgc {
     }
 
     pub fn serve(&mut self) {
-        let timeout = after(Duration::from_secs(1));
+        let dt = chrono::Local::now();
+        let ndt = chrono::Local
+            .ymd(dt.year(), dt.month(), dt.day())
+            .and_hms_milli(0, 0, 0, 0)
+            - dt;
+        let mut nt = tick(ndt.to_std().unwrap());
+        let t = tick(Duration::from_secs(10));
         loop {
             select! {
-                recv(self.receiver) -> path => {
-                    match path{
-                        Ok(p) => self.bloomfilter.set(&p),
-                        Err(_) => {},
-                    };
-                },
-                recv(timeout) -> _ => {
-                    let mut rec = Record::new();
-                    let mut now:Timestamp = Timestamp::new();
-                    now.set_seconds(Local::now().timestamp());
-                    rec.set_time(now);
-                    rec.set_data(self.bloomfilter.bitmap());
-                    rec.set_totalPut(config::total_put.load(Ordering::SeqCst) as u64);
-                    let result = rec.write_to_bytes().unwrap();
+                    recv(self.receiver) -> path => {
+                        match path{
+                            Ok(p) => self.bloomfilter.set(&p),
+                            Err(_) => {},
+                        };
+                    },
+                    recv(t) -> _ => {
+                        let mut rec = Record::new();
+                        let mut now:Timestamp = Timestamp::new();
+                        now.set_seconds(Local::now().timestamp());
+                        rec.set_time(now);
+                        rec.set_data(self.bloomfilter.bitmap());
+                        rec.set_totalPut(config::total_put.load(Ordering::SeqCst) as u64);
+                        let result = rec.write_to_bytes().unwrap();
+                    },
+                    recv(nt) -> _ => {
+                                let dt = chrono::Local::now();
+            let ndt = chrono::Local.ymd(dt.year(), dt.month(), dt.day()+1).and_hms_milli(0, 0, 0, 0)-dt;
+            let mut nt = tick(ndt.to_std().unwrap());
 
-                },
-            }
+                    }
+                }
         }
     }
 }

@@ -26,6 +26,7 @@ extern crate libc;
 extern crate lz4;
 #[macro_use]
 extern crate rocket;
+extern crate chrono;
 extern crate log;
 extern crate protobuf;
 #[cfg_attr(not(test), macro_use(slog_info))]
