@@ -8,6 +8,8 @@ use crossbeam_channel::tick;
 use crossbeam_channel::Receiver;
 use protobuf::well_known_types::Timestamp;
 use protobuf::Message;
+use std::fs;
+use std::os::unix::fs::MetadataExt;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::Ordering;
 use std::time::Duration;
@@ -16,6 +18,7 @@ use crate::config;
 use crate::diskgc::bloom::spb::Record;
 use crate::diskgc::bloom::store::gc_store;
 use crate::diskgc::bloom::store::new_gc_store;
+use crate::diskgc::lazy::get_entries;
 use crate::util::bloomfilter::Bloom;
 
 const items_count: usize = 500000;
@@ -30,6 +33,8 @@ struct bloom_entry {
 }
 
 pub struct bloomgc {
+    path: PathBuf,
+    days: usize,
     receiver: Receiver<PathBuf>,
     bloomfilter: Bloom<PathBuf>,
     all_bloomfilter: Vec<bloom_entry>,
@@ -37,8 +42,11 @@ pub struct bloomgc {
 }
 
 impl bloomgc {
-    pub fn new(rx: Receiver<PathBuf>, p: PathBuf) -> bloomgc {
-        let mut store = new_gc_store(p);
+    pub fn new(rx: Receiver<PathBuf>, p: PathBuf, days: usize) -> bloomgc {
+        let path = p.clone();
+        let mut gc_file_path = p.clone();
+        gc_file_path.pop();
+        let mut store = new_gc_store(gc_file_path);
         let mut all_bloom: Vec<bloom_entry> = Vec::new();
         for get_bloom in store.get_all_bloom() {
             let bloom: Bloom<PathBuf> = Bloom::from_existing(
@@ -54,7 +62,9 @@ impl bloomgc {
             });
         }
         bloomgc {
+            path: path,
             receiver: rx,
+            days: days,
             bloomfilter: Bloom::from_existing(
                 &[0; bitmap_size],
                 number_of_bits,
@@ -104,10 +114,12 @@ impl bloomgc {
                     rec.set_data(bitmap);
                     rec.set_totalPut(totalp);
 
-                    self.all_bloomfilter.push(bloom_entry{
-                        bloom: self.bloomfilter.clone(),
-                        total_put: totalp,
-                    });
+                    if totalp > 200000 {
+                        self.all_bloomfilter.push(bloom_entry{
+                            bloom: self.bloomfilter.clone(),
+                            total_put: totalp,
+                        });
+                    }
 
                     self.bloomfilter.clear();
                     config::total_put.swap(0,Ordering::SeqCst);
@@ -118,5 +130,20 @@ impl bloomgc {
                 }
             }
         }
+    }
+
+    fn clear(&self) {
+        println!("startgc {:?}", self.path.as_path());
+        let entries = get_entries(self.path.as_path());
+        for entry in entries.into_iter() {}
+    }
+
+    fn is_clear(&self, p: PathBuf) -> bool {
+        for element in self.all_bloomfilter.iter().rev().take(self.days) {
+            if !element.bloom.check(&p) {
+                return false;
+            }
+        }
+        return true;
     }
 }

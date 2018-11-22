@@ -32,7 +32,7 @@ impl PartialEq for EntryInfo {
     }
 }
 
-fn get_entries<P: AsRef<Path>>(path: P) -> Vec<EntryInfo> {
+pub fn get_entries<P: AsRef<Path>>(path: P) -> Vec<EntryInfo> {
     let mut result: Vec<EntryInfo> = Vec::new();
     for entry in WalkDir::new(path).into_iter().filter_map(|e| e.ok()) {
         let p = entry.path();
