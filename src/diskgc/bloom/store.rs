@@ -42,7 +42,7 @@ impl gc_store {
 
     pub fn get_all_bloom(&mut self) -> Vec<Record> {
         let mut result: Vec<Record> = Vec::new();
-        let mut blooms = Arc::get_mut(&mut self._all_bloom_fd_).unwrap();
+        let blooms = Arc::get_mut(&mut self._all_bloom_fd_).unwrap();
         for bloom in blooms {
             let mut r = Record::new();
             r.merge_from_bytes(bloom.as_slice()).unwrap();
@@ -52,7 +52,7 @@ impl gc_store {
     }
 
     pub fn append_to_all_bloom(&mut self, r: Record) -> io::Result<()> {
-        let mut blooms = Arc::get_mut(&mut self._all_bloom_fd_).unwrap();
+        let blooms = Arc::get_mut(&mut self._all_bloom_fd_).unwrap();
         blooms.write(r.write_to_bytes().unwrap())
     }
 }

@@ -9,6 +9,7 @@ use std::marker::PhantomData;
 use rand::Rng;
 
 /// Bloom filter structure
+#[derive(Clone)]
 pub struct Bloom<T> {
     bitmap: BitVec,
     bitmap_bits: u64,

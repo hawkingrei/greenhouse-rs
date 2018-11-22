@@ -1,9 +1,9 @@
 pub mod future;
 
-use core_affinity::CoreId;
 use crate::util::mpsc::{self, Receiver, Sender};
 use crate::util::time::{Instant, SlowTimer};
 use crate::util::timer::Timer;
+use core_affinity::CoreId;
 use log::{debug, info, warn};
 use std::error::Error;
 use std::fmt::{self, Debug, Display, Formatter};
