@@ -97,21 +97,21 @@ pub trait WritableFile: Sized {
 
     #[cfg(not(target_os = "linux"))]
     fn range_sync(&self, offset: i64, nbytes: i64) -> State {
-        return State::ok();
+        State::ok()
     }
 
     fn allocate(&self, offset: i64, len: i64) -> State {
-        return State::ok();
+        State::ok()
     }
 
     fn prepare_write(&mut self, offset: usize, len: usize) {}
 
     fn positioned_append(&mut self, data: Vec<u8>, offset: usize) -> State {
-        return State::not_supported();
+        State::not_supported()
     }
 
     fn fsync(&self) -> State {
-        return self.sync();
+        self.sync()
     }
 
     fn get_file_size(&self) -> usize {

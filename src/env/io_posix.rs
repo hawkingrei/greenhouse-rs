@@ -13,6 +13,7 @@ use std::io::ErrorKind;
 use std::mem;
 use std::os::raw::c_char;
 use std::path::PathBuf;
+use std::ptr;
 use std::usize;
 
 pub struct FILE(*mut libc::FILE);
@@ -162,7 +163,7 @@ impl PosixOverwriteFile {
     pub fn new(filename: PathBuf, options: env::EnvOptions) -> io::Result<PosixOverwriteFile> {
         let mut fd = -1;
         let flag = libc::O_RDWR | libc::O_CREAT;
-        let mut file = 0 as *mut libc::FILE;
+        let mut file = ptr::null_mut();
         loop {
             unsafe {
                 fd = libc::open(
@@ -206,11 +207,11 @@ impl PosixOverwriteFile {
             unsafe {
                 loop {
                     file = libc::fdopen(fd, b"rw".as_ptr() as *const c_char);
-                    if !(file == 0 as *mut libc::FILE && *errno_location() as i32 == libc::EINTR) {
+                    if !(file == ptr::null_mut() && *errno_location() as i32 == libc::EINTR) {
                         break;
                     }
                 }
-                if file == 0 as *mut libc::FILE {
+                if file == ptr::null_mut() {
                     libc::close(fd);
                     return Err(io::Error::new(
                         ErrorKind::Interrupted,
@@ -233,7 +234,7 @@ impl Default for PosixOverwriteFile {
         PosixOverwriteFile {
             filename_: PathBuf::from(""),
             fd_: 0,
-            file_: FILE(0 as *mut libc::FILE),
+            file_: FILE(ptr::null_mut()),
         }
     }
 }
@@ -324,7 +325,7 @@ impl Default for PosixAppendFile {
         PosixAppendFile {
             filename_: PathBuf::from(""),
             fd_: 0,
-            file_: FILE(0 as *mut libc::FILE),
+            file_: FILE(ptr::null_mut()),
             curr: 0,
             next: 0,
         }
@@ -363,7 +364,7 @@ impl PosixAppendFile {
     pub fn new(filename: PathBuf, options: env::EnvOptions) -> io::Result<PosixAppendFile> {
         let mut fd = -1;
         let flag = libc::O_RDWR | libc::O_CREAT | libc::O_APPEND;
-        let mut file = 0 as *mut libc::FILE;
+        let mut file = ptr::null_mut();
         loop {
             unsafe {
                 fd = libc::open(
@@ -407,11 +408,11 @@ impl PosixAppendFile {
             unsafe {
                 loop {
                     file = libc::fdopen(fd, b"rw".as_ptr() as *const c_char);
-                    if !(file == 0 as *mut libc::FILE && *errno_location() as i32 == libc::EINTR) {
+                    if !(file == ptr::null_mut() && *errno_location() as i32 == libc::EINTR) {
                         break;
                     }
                 }
-                if file == 0 as *mut libc::FILE {
+                if file == ptr::null_mut() {
                     libc::close(fd);
                     return Err(io::Error::new(
                         ErrorKind::Interrupted,
@@ -420,14 +421,13 @@ impl PosixAppendFile {
                 }
             }
         }
-
-        return Ok(PosixAppendFile {
+        Ok(PosixAppendFile {
             filename_: filename,
             fd_: fd,
             file_: FILE(file),
             curr: 0,
             next: 0,
-        });
+        })
     }
 
     pub fn write(&mut self, data: Vec<u8>) -> io::Result<()> {

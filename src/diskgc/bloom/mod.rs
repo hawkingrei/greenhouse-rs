@@ -99,7 +99,7 @@ impl Bloomgc {
                     rec.set_data(self.bloomfilter.bitmap());
                     rec.set_totalPut(config::total_put.load(Ordering::SeqCst) as u64);
                     let result = rec.write_to_bytes().unwrap();
-                    self.store.save_today_bloom(result);
+                    self.store.save_today_bloom(result).unwrap();
                 },
                 recv(nt) -> _ => {
                     let totalp = config::total_put.load(Ordering::SeqCst) as u64;
@@ -125,7 +125,7 @@ impl Bloomgc {
 
                     let ndt = chrono::Local.ymd(dt.year(), dt.month(), dt.day()+1).and_hms_milli(0, 0, 0, 0)-dt;
                     let nt = tick(ndt.to_std().unwrap());
-                    self.store.append_to_all_bloom(rec);
+                    self.store.append_to_all_bloom(rec).unwrap();
                 }
             }
         }

@@ -21,7 +21,7 @@ impl CacheFile {
 
     pub fn decompression(self, result: &mut Vec<u8>) -> io::Result<()> {
         match zstd::stream::copy_decode(self.1, result) {
-            Ok(o) => return Ok(o),
+            Ok(_) => return Ok(()),
             Err(e) => {
                 fs::remove_file(self.0.clone().as_path()).ok();
                 return Err(e);
