@@ -6,6 +6,7 @@ use chrono::offset::Local;
 use chrono::prelude::*;
 use crossbeam_channel::tick;
 use crossbeam_channel::Receiver;
+use log::info;
 use protobuf::well_known_types::Timestamp;
 use protobuf::Message;
 use std::fs;
@@ -89,7 +90,7 @@ impl Bloomgc {
         loop {
             select! {
                 recv(self.receiver) -> path => {
-                    println!("{}","do it");
+                    info!("{}","do it");
                     if let Ok(p) = path { self.bloomfilter.set(&p) };
                 },
                 recv(t) -> _ => {
@@ -101,7 +102,7 @@ impl Bloomgc {
                     rec.set_totalPut(config::total_put.load(Ordering::SeqCst) as u64);
                     let result = rec.write_to_bytes().unwrap();
                     self.store.save_today_bloom(result).unwrap();
-                    println!("{}","save today bloom");
+                    info!("{}","save today bloom");
                 },
                 recv(nt) -> _ => {
                     let totalp = config::total_put.load(Ordering::SeqCst) as u64;
@@ -134,7 +135,7 @@ impl Bloomgc {
     }
 
     fn clear(&self) {
-        println!("startgc {:?}", self.path.as_path());
+        info!("startgc {:?}", self.path.as_path());
         let entries = get_entries(self.path.as_path());
         for entry in entries.into_iter() {
             match fs::metadata(entry.path.as_path()) {
