@@ -10,13 +10,10 @@ use clap::{App, Arg};
 use crossbeam_channel;
 use futures::future::lazy;
 use futures::Future;
+use log::info;
 use rocket::config::LoggingLevel;
 use rocket::config::{Config, Environment, Limits};
-use sloggers::{
-    terminal::{Destination, TerminalLoggerBuilder},
-    types::Severity,
-    Build,
-};
+
 use std::path::Path;
 use std::path::PathBuf;
 use std::{thread, time};
@@ -27,7 +24,6 @@ use greenhouse::disk::get_disk_usage_prom;
 use greenhouse::diskgc::bloom::Bloomgc;
 use greenhouse::diskgc::lazy;
 use greenhouse::router;
-use greenhouse::util::rocket_log::{SlogFairing, SyncLogger};
 
 fn main() {
     let matches = App::new("greenhouse")
@@ -79,7 +75,7 @@ fn main() {
     let (tx, rx) = crossbeam_channel::unbounded::<PathBuf>();
 
     rt.spawn(lazy(move || {
-        println!("port was passed in: {}", _cache_port);
+        info!("port was passed in: {}", _cache_port);
         let config = Config::build(Environment::Staging)
             .address(_host)
             .port(_cache_port)
@@ -96,7 +92,7 @@ fn main() {
         Ok(())
     }));
     rt.spawn(lazy(move || {
-        println!("port was passed in: {}", metrics_addr);
+        info!("port was passed in: {}", metrics_addr);
         let config = Config::build(Environment::Staging)
             .address("0.0.0.0")
             .port(_metrics_port)
@@ -112,6 +108,7 @@ fn main() {
     let ten_millis = time::Duration::from_secs(2);
     rt.spawn(lazy(move || {
         loop {
+            info!("disk metric start");
             thread::sleep(ten_millis);
             get_disk_usage_prom(Path::new(&metrics_dir));
         }
@@ -122,6 +119,7 @@ fn main() {
     let gc_millis = time::Duration::from_secs(5);
     rt.spawn(lazy(move || {
         loop {
+            info!("lazy gc start");
             gc.clone().rocket();
             thread::sleep(gc_millis);
         }
@@ -129,6 +127,7 @@ fn main() {
     }));
     let mut bgc = Bloomgc::new(rx, pathbuf, 3);
     rt.spawn(lazy(move || {
+        info!("bgc start");
         bgc.serve();
         Ok(())
     }));
