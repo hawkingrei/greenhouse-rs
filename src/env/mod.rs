@@ -6,7 +6,7 @@ use std::path::PathBuf;
 use crate::env;
 use crate::util::status::State;
 
-pub const k_default_page_size: usize = 4 * 1024;
+pub const K_DEFAULT_PAGE_SIZE: usize = 4 * 1024;
 
 #[derive(PartialEq)]
 pub enum WALRecoveryMode {

@@ -1,9 +1,7 @@
 use crate::env;
-use crate::env::k_default_page_size;
-use crate::env::EnvOptions;
 use crate::env::OverwriteFile;
+use crate::env::K_DEFAULT_PAGE_SIZE;
 use crate::env::{SequentialFile, WritableFile};
-use crate::util::status::{Code, State};
 
 use libc;
 use libc::c_int;
@@ -14,7 +12,6 @@ use std::io;
 use std::io::ErrorKind;
 use std::mem;
 use std::os::raw::c_char;
-use std::path::Path;
 use std::path::PathBuf;
 use std::usize;
 
@@ -52,7 +49,7 @@ unsafe fn posix_fread_unlocked(
     return libc::fread_unlocked(ptr, size, nobj, stream);
 }
 
-fn SetFD_CLOEXEC(fd: i32, options: env::EnvOptions) {
+fn set_fd_cloexec(fd: i32, options: env::EnvOptions) {
     if options.set_fd_cloexec && fd > 0 {
         unsafe {
             libc::fcntl(
@@ -122,14 +119,14 @@ fn get_flag() -> i32 {
 
 fn get_logical_buffer_size() -> usize {
     if cfg!(not(target_os = "linux")) {
-        return k_default_page_size;
+        return K_DEFAULT_PAGE_SIZE;
     } else {
-        return k_default_page_size;
+        return K_DEFAULT_PAGE_SIZE;
         //Todo: support linux
     }
 }
 
-fn IsSectorAligned(off: usize, sector_size: usize) -> bool {
+fn is_sector_aligned(off: usize, sector_size: usize) -> bool {
     return off % sector_size == 0;
 }
 
@@ -164,7 +161,7 @@ impl fmt::Debug for PosixOverwriteFile {
 impl PosixOverwriteFile {
     pub fn new(filename: PathBuf, options: env::EnvOptions) -> io::Result<PosixOverwriteFile> {
         let mut fd = -1;
-        let mut flag = libc::O_RDWR | libc::O_CREAT;
+        let flag = libc::O_RDWR | libc::O_CREAT;
         let mut file = 0 as *mut libc::FILE;
         loop {
             unsafe {
@@ -192,7 +189,7 @@ impl PosixOverwriteFile {
                 ),
             ));
         }
-        SetFD_CLOEXEC(fd, options.clone());
+        set_fd_cloexec(fd, options.clone());
         if options.use_direct_reads && !options.use_mmap_reads {
             #[cfg(target_os = "macos")]
             unsafe {
@@ -269,9 +266,9 @@ impl OverwriteFile for PosixOverwriteFile {
                 self.file_.0,
             );
 
-            if (libc::ferror(self.file_.0) > 0
+            if libc::ferror(self.file_.0) > 0
                 && ((*errno_location()) as i32 == libc::EINTR)
-                && r == 0)
+                && r == 0
             {
                 return Err(io::Error::new(
                     ErrorKind::Interrupted,
@@ -365,7 +362,7 @@ impl Iterator for PosixAppendFile {
 impl PosixAppendFile {
     pub fn new(filename: PathBuf, options: env::EnvOptions) -> io::Result<PosixAppendFile> {
         let mut fd = -1;
-        let mut flag = libc::O_RDWR | libc::O_CREAT | libc::O_APPEND;
+        let flag = libc::O_RDWR | libc::O_CREAT | libc::O_APPEND;
         let mut file = 0 as *mut libc::FILE;
         loop {
             unsafe {
@@ -393,7 +390,7 @@ impl PosixAppendFile {
                 ),
             ));
         }
-        SetFD_CLOEXEC(fd, options.clone());
+        set_fd_cloexec(fd, options.clone());
         if options.use_direct_reads && !options.use_mmap_reads {
             #[cfg(target_os = "macos")]
             unsafe {
@@ -468,9 +465,9 @@ impl PosixAppendFile {
                 1 as libc::size_t,
                 self.file_.0,
             );
-            if (libc::ferror(self.file_.0) > 0
+            if libc::ferror(self.file_.0) > 0
                 && ((*errno_location()) as i32 == libc::EINTR)
-                && r == 0)
+                && r == 0
             {
                 return Err(io::Error::new(
                     ErrorKind::Interrupted,
@@ -487,9 +484,9 @@ impl PosixAppendFile {
                 1 as libc::size_t,
                 self.file_.0,
             );
-            if (libc::ferror(self.file_.0) > 0
+            if libc::ferror(self.file_.0) > 0
                 && ((*errno_location()) as i32 == libc::EINTR)
-                && r == 0)
+                && r == 0
             {
                 return Err(io::Error::new(
                     ErrorKind::Interrupted,

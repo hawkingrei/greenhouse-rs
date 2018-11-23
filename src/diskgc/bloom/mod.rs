@@ -10,67 +10,67 @@ use protobuf::well_known_types::Timestamp;
 use protobuf::Message;
 use std::fs;
 use std::os::unix::fs::MetadataExt;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::sync::atomic::Ordering;
 use std::time::Duration;
 use std::time::SystemTime;
 
 use crate::config;
 use crate::diskgc::bloom::spb::Record;
-use crate::diskgc::bloom::store::gc_store;
 use crate::diskgc::bloom::store::new_gc_store;
+use crate::diskgc::bloom::store::GcStore;
 use crate::diskgc::lazy::get_entries;
 use crate::util::bloomfilter::Bloom;
 use crate::util::metrics;
 
-const items_count: usize = 500000;
-const fp_p: f64 = 0.1;
-const number_of_bits: u64 = 2396272;
-const bitmap_size: usize = 299534;
-const number_of_hash_functions: u32 = 4;
+const ITEMS_COUNT: usize = 500000;
+const FP_P: f64 = 0.1;
+const NUMBER_OF_BITS: u64 = 2396272;
+const BITMAP_SIZE: usize = 299534;
+const NUMBER_OF_HASH_FUNCTIONS: u32 = 4;
 
-struct bloom_entry {
+struct BloomEntry {
     bloom: Bloom<PathBuf>,
     total_put: u64,
 }
 
-pub struct bloomgc {
+pub struct Bloomgc {
     path: PathBuf,
     days: usize,
     receiver: Receiver<PathBuf>,
     bloomfilter: Bloom<PathBuf>,
-    all_bloomfilter: Vec<bloom_entry>,
-    store: gc_store,
+    all_bloomfilter: Vec<BloomEntry>,
+    store: GcStore,
 }
 
-impl bloomgc {
-    pub fn new(rx: Receiver<PathBuf>, p: PathBuf, days: usize) -> bloomgc {
+impl Bloomgc {
+    pub fn new(rx: Receiver<PathBuf>, p: PathBuf, days: usize) -> Bloomgc {
         let path = p.clone();
         let mut gc_file_path = p.clone();
         gc_file_path.pop();
         let mut store = new_gc_store(gc_file_path);
-        let mut all_bloom: Vec<bloom_entry> = Vec::new();
+        let mut all_bloom: Vec<BloomEntry> = Vec::new();
         for get_bloom in store.get_all_bloom() {
             let bloom: Bloom<PathBuf> = Bloom::from_existing(
                 get_bloom.data.as_slice(),
-                number_of_bits,
-                number_of_hash_functions,
+                NUMBER_OF_BITS,
+                NUMBER_OF_HASH_FUNCTIONS,
                 [(2749812374, 12341234), (574893759834, 1298374918234)],
             );
             let totalput = get_bloom.totalPut;
-            all_bloom.push(bloom_entry {
+            all_bloom.push(BloomEntry {
                 bloom: bloom,
                 total_put: totalput,
             });
         }
-        bloomgc {
+        Bloomgc {
             path: path,
             receiver: rx,
             days: days,
             bloomfilter: Bloom::from_existing(
-                &[0; bitmap_size],
-                number_of_bits,
-                number_of_hash_functions,
+                &[0; BITMAP_SIZE],
+                NUMBER_OF_BITS,
+                NUMBER_OF_HASH_FUNCTIONS,
                 [(2749812374, 12341234), (574893759834, 1298374918234)],
             ),
             store: store,
@@ -84,15 +84,12 @@ impl bloomgc {
             .ymd(dt.year(), dt.month(), dt.day())
             .and_hms_milli(0, 0, 0, 0)
             - dt;
-        let mut nt = tick(ndt.to_std().unwrap());
+        let nt = tick(ndt.to_std().unwrap());
         let t = tick(Duration::from_secs(10));
         loop {
             select! {
                 recv(self.receiver) -> path => {
-                    match path{
-                        Ok(p) => self.bloomfilter.set(&p),
-                        Err(_) => {},
-                    };
+                    if let Ok(p) = path { self.bloomfilter.set(&p) };
                 },
                 recv(t) -> _ => {
                     let mut rec = Record::new();
@@ -117,7 +114,7 @@ impl bloomgc {
                     rec.set_totalPut(totalp);
 
                     if totalp > 200000 {
-                        self.all_bloomfilter.push(bloom_entry{
+                        self.all_bloomfilter.push(BloomEntry{
                             bloom: self.bloomfilter.clone(),
                             total_put: totalp,
                         });
@@ -127,7 +124,7 @@ impl bloomgc {
                     config::total_put.swap(0,Ordering::SeqCst);
 
                     let ndt = chrono::Local.ymd(dt.year(), dt.month(), dt.day()+1).and_hms_milli(0, 0, 0, 0)-dt;
-                    let mut nt = tick(ndt.to_std().unwrap());
+                    let nt = tick(ndt.to_std().unwrap());
                     self.store.append_to_all_bloom(rec);
                 }
             }
@@ -146,7 +143,7 @@ impl bloomgc {
                         .as_secs()
                         - meta.ctime() as u64) as f64
                         / 3600.0
-                        > 2 * 24.0
+                        > 2.0 * 24.0
                     {
                         continue;
                     }

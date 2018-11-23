@@ -9,29 +9,29 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 #[derive(Debug)]
-pub struct gc_store {
+pub struct GcStore {
     path: PathBuf,
     _today_fd_: Arc<PosixOverwriteFile>,
     _all_bloom_fd_: Arc<PosixAppendFile>,
 }
 
-pub fn new_gc_store(p: PathBuf) -> gc_store {
-    let mut op: EnvOptions = EnvOptions::default();
-    let mut ap: EnvOptions = EnvOptions::default();
+pub fn new_gc_store(p: PathBuf) -> GcStore {
+    let op: EnvOptions = EnvOptions::default();
+    let ap: EnvOptions = EnvOptions::default();
     let mut of_path = p.clone();
     of_path.push("today");
     let mut af_path = p.clone();
     af_path.push("all");
-    let mut of: PosixOverwriteFile = PosixOverwriteFile::new(of_path, op).unwrap();
-    let mut af: PosixAppendFile = PosixAppendFile::new(af_path, ap).unwrap();
-    gc_store {
+    let of: PosixOverwriteFile = PosixOverwriteFile::new(of_path, op).unwrap();
+    let af: PosixAppendFile = PosixAppendFile::new(af_path, ap).unwrap();
+    GcStore {
         path: p,
         _today_fd_: Arc::new(of),
         _all_bloom_fd_: Arc::new(af),
     }
 }
 
-impl gc_store {
+impl GcStore {
     pub fn save_today_bloom(&mut self, r: Vec<u8>) -> io::Result<()> {
         Arc::get_mut(&mut self._today_fd_).unwrap().write(r)
     }

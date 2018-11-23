@@ -36,7 +36,7 @@ pub fn get_entries<P: AsRef<Path>>(path: P) -> Vec<EntryInfo> {
     let mut result: Vec<EntryInfo> = Vec::new();
     for entry in WalkDir::new(path).into_iter().filter_map(|e| e.ok()) {
         let p = entry.path();
-        let meta = match fs::metadata(p.clone()) {
+        let meta = match fs::metadata(&p) {
             Ok(meta) => meta,
             Err(e) => {
                 continue;

@@ -23,7 +23,7 @@ use tokio::runtime::Runtime;
 
 use greenhouse::config::CachePath;
 use greenhouse::disk::get_disk_usage_prom;
-use greenhouse::diskgc::bloom::bloomgc;
+use greenhouse::diskgc::bloom::Bloomgc;
 use greenhouse::diskgc::lazy;
 use greenhouse::router;
 use greenhouse::util::rocket_log::{SlogFairing, SyncLogger};
@@ -136,9 +136,9 @@ fn main() {
         }
         Ok(())
     }));
-    let mut bloomgc = bloomgc::new(rx, pathbuf,3);
+    let mut bgc = Bloomgc::new(rx, pathbuf, 3);
     rt.spawn(lazy(move || {
-        bloomgc.serve();
+        bgc.serve();
         Ok(())
     }));
     rt.shutdown_on_idle().wait().unwrap();
