@@ -5,6 +5,7 @@ use std::arch::x86::*;
 use std::arch::x86_64::*;
 use std::cmp;
 use std::mem;
+use std::ptr;
 
 /// The size of an L1 cache line in bytes on x86-64.    
 const _CACHE_LINE_SIZE: u8 = 64;
@@ -99,7 +100,13 @@ impl Bloomfilter {
         unsafe {
             let mask = make_mask(hash);
             let addr = self.directory_.as_mut_ptr().offset(bucket_idx as isize);
-            let mut bucket = _mm256_load_si256(addr as *const __m256i);
+            let mut simd_addr = _mm256_setzero_si256();
+            ptr::copy_nonoverlapping(
+                addr,
+                std::mem::transmute::<*mut __m256i, *mut [i64; 4]>(&mut simd_addr),
+                1,
+            );
+            let mut bucket = _mm256_load_si256(&simd_addr);
             _mm256_store_si256(&mut bucket, _mm256_or_si256(bucket, mask));
             _mm256_zeroupper();
         }
@@ -109,7 +116,13 @@ impl Bloomfilter {
         unsafe {
             let mask = make_mask(hash);
             let addr = self.directory_.as_ptr().offset(bucket_idx as isize);
-            let bucket = _mm256_load_si256(addr as *const __m256i);
+            let mut simd_addr = _mm256_setzero_si256();
+            ptr::copy_nonoverlapping(
+                addr,
+                std::mem::transmute::<*mut __m256i, *mut [i64; 4]>(&mut simd_addr),
+                1,
+            );
+            let bucket = _mm256_load_si256(&simd_addr);
             let result = _mm256_testc_si256(bucket, mask);
             _mm256_zeroupper();
             return result == 0;
@@ -152,12 +165,9 @@ fn test_bloom_simd() {
     let mut bf: Bloomfilter = Default::default();
     bf = bf.init(8);
     {
-        //bf.insert(0x47b2137b);
-        //assert!(&bf.find(0x47b2137b) == false);
-        //assert!(bf.find(0x4) == true);
+        bf.insert(0x47b2137b);
+        assert!(bf.find(0x47b2137b) == true);
+        //assert!(bf.find(0x53a3a31) == false);
         //bf.insert(0x48ab59e2);
-        //{
-        //
-        //}
     }
 }
