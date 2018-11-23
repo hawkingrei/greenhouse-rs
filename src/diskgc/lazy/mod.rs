@@ -10,7 +10,7 @@ use crate::util::metrics;
 
 #[derive(Eq)]
 pub struct EntryInfo {
-    path: PathBuf,
+    pub path: PathBuf,
     last_access: i64,
 }
 

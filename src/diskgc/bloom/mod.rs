@@ -13,6 +13,7 @@ use std::os::unix::fs::MetadataExt;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::Ordering;
 use std::time::Duration;
+use std::time::SystemTime;
 
 use crate::config;
 use crate::diskgc::bloom::spb::Record;
@@ -20,6 +21,7 @@ use crate::diskgc::bloom::store::gc_store;
 use crate::diskgc::bloom::store::new_gc_store;
 use crate::diskgc::lazy::get_entries;
 use crate::util::bloomfilter::Bloom;
+use crate::util::metrics;
 
 const items_count: usize = 500000;
 const fp_p: f64 = 0.1;
@@ -135,10 +137,50 @@ impl bloomgc {
     fn clear(&self) {
         println!("startgc {:?}", self.path.as_path());
         let entries = get_entries(self.path.as_path());
-        for entry in entries.into_iter() {}
+        for entry in entries.into_iter() {
+            match fs::metadata(entry.path.as_path()) {
+                Ok(meta) => {
+                    if !(SystemTime::now()
+                        .duration_since(SystemTime::UNIX_EPOCH)
+                        .unwrap()
+                        .as_secs()
+                        - meta.ctime() as u64) as f64
+                        / 3600.0
+                        > 2 * 24.0
+                    {
+                        continue;
+                    }
+                    if !self.is_clear(&entry.path) {
+                        continue;
+                    }
+                    match fs::remove_file(entry.path.as_path()) {
+                        Ok(_) => {}
+                        Err(e) => {
+                            continue;
+                        }
+                    }
+                    metrics::FilesEvicted.inc();
+                    metrics::LastEvictedAccessAge.set(
+                        (SystemTime::now()
+                            .duration_since(SystemTime::UNIX_EPOCH)
+                            .unwrap()
+                            .as_secs()
+                            - meta.ctime() as u64) as f64
+                            / 3600.0,
+                    );
+                }
+                Err(e) => {
+                    continue;
+                }
+            };
+        }
     }
 
-    fn is_clear(&self, p: PathBuf) -> bool {
+    fn is_clear(&self, p: &PathBuf) -> bool {
+        let ntime = SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .unwrap()
+            .as_secs();
         for element in self.all_bloomfilter.iter().rev().take(self.days) {
             if !element.bloom.check(&p) {
                 return false;
