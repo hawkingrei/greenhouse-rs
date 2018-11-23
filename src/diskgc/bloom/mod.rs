@@ -82,7 +82,7 @@ impl Bloomgc {
     pub fn serve(&mut self) {
         let dt = chrono::Local::now();
         let ndt = chrono::Local
-            .ymd(dt.year(), dt.month(), dt.day())
+            .ymd(dt.year(), dt.month(), dt.day() + 1)
             .and_hms_milli(0, 0, 0, 0)
             - dt;
         let nt = tick(ndt.to_std().unwrap());
@@ -188,4 +188,15 @@ impl Bloomgc {
         }
         return true;
     }
+}
+
+#[test]
+fn test_bloom_tick() {
+    let dt = chrono::Local.ymd(2018, 11, 23).and_hms_milli(0, 0, 0, 0);
+    let ndt = chrono::Local
+        .ymd(dt.year(), dt.month(), dt.day() + 1)
+        .and_hms_milli(0, 0, 0, 0)
+        - dt;
+    let nt = ndt.to_std().unwrap();
+    assert_eq!(nt, Duration::from_secs(86400));
 }

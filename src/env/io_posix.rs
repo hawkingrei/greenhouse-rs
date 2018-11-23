@@ -1,4 +1,5 @@
 use crate::env;
+use crate::env::EnvOptions;
 use crate::env::OverwriteFile;
 use crate::env::K_DEFAULT_PAGE_SIZE;
 use crate::env::{SequentialFile, WritableFile};
