@@ -452,7 +452,6 @@ impl PosixAppendFile {
             let mut dst: libc::stat = mem::uninitialized();
             libc::fstat(self.fd_, &mut dst as *mut libc::stat);
             if dst.st_size == self.curr as i64 {
-                println!("good");
                 return Ok(vec![]);
             }
 

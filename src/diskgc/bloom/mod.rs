@@ -100,6 +100,7 @@ impl Bloomgc {
                     rec.set_totalPut(config::total_put.load(Ordering::SeqCst) as u64);
                     let result = rec.write_to_bytes().unwrap();
                     self.store.save_today_bloom(result).unwrap();
+                    println!("{}","save today bloom");
                 },
                 recv(nt) -> _ => {
                     let totalp = config::total_put.load(Ordering::SeqCst) as u64;
