@@ -118,7 +118,7 @@ fn main() {
             .launch();
         Ok(())
     }));
-    let ten_millis = time::Duration::from_millis(1000);
+    let ten_millis = time::Duration::from_secs(2);
     rt.spawn(lazy(move || {
         loop {
             thread::sleep(ten_millis);
@@ -128,7 +128,7 @@ fn main() {
     }));
     let pathbuf = Path::new(&gcpath).to_path_buf();
     let gc = lazy::Lazygc::new(pathbuf.as_path(), 5.0, 20.0);
-    let gc_millis = time::Duration::from_millis(10000);
+    let gc_millis = time::Duration::from_secs(5);
     rt.spawn(lazy(move || {
         loop {
             gc.clone().rocket();
