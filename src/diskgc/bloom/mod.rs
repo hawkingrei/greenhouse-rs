@@ -89,6 +89,7 @@ impl Bloomgc {
         loop {
             select! {
                 recv(self.receiver) -> path => {
+                    println!("{}","do it");
                     if let Ok(p) = path { self.bloomfilter.set(&p) };
                 },
                 recv(t) -> _ => {
