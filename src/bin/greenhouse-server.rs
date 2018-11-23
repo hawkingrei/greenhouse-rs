@@ -4,6 +4,7 @@
 extern crate greenhouse;
 #[macro_use]
 extern crate rocket;
+extern crate env_logger;
 
 use clap::{App, Arg};
 use crossbeam_channel;
@@ -74,14 +75,7 @@ fn main() {
     let mut rt = Runtime::new().unwrap();
     let metrics_dir = _dir.to_string().to_string();
     let gcpath = metrics_dir.clone();
-
-    let mut builder = TerminalLoggerBuilder::new();
-    builder.level(Severity::Debug);
-    builder.destination(Destination::Stderr);
-    let logger = builder.build().unwrap();
-
-    let fairing = SlogFairing::new(logger.clone());
-
+    env_logger::init();
     let (tx, rx) = crossbeam_channel::unbounded::<PathBuf>();
 
     rt.spawn(lazy(move || {
@@ -95,14 +89,12 @@ fn main() {
             .finalize()
             .unwrap();
         rocket::custom(config)
-            .attach(fairing.clone())
             .manage(CachePath(_dir.to_string()))
             .manage(tx)
             .mount("/", routes![router::upload, router::get, router::head])
             .launch();
         Ok(())
     }));
-    let fairings = SlogFairing::new(logger);
     rt.spawn(lazy(move || {
         println!("port was passed in: {}", metrics_addr);
         let config = Config::build(Environment::Staging)
@@ -113,7 +105,6 @@ fn main() {
             .finalize()
             .unwrap();
         rocket::custom(config)
-            .attach(fairings.clone())
             .mount("/", routes![router::metrics_router::metrics])
             .launch();
         Ok(())
