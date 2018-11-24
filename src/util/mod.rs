@@ -3,6 +3,7 @@ pub mod bloomfilter_simd;
 pub mod cache_padded;
 pub mod coding;
 pub mod hash_util;
+pub mod logger;
 #[macro_use]
 pub mod macros;
 pub mod memory;

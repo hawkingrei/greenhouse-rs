@@ -8,6 +8,7 @@
 #![cfg_attr(feature = "clippy", feature(plugin))]
 #![cfg_attr(feature = "clippy", plugin(clippy))]
 #![recursion_limit = "128"]
+#![feature(uniform_paths)]
 
 extern crate crossbeam;
 #[macro_use]
@@ -27,16 +28,24 @@ extern crate lz4;
 #[macro_use]
 extern crate rocket;
 extern crate chrono;
+#[macro_use]
 extern crate log;
 extern crate protobuf;
-#[cfg_attr(not(test), macro_use(slog_info))]
+extern crate serde;
+#[cfg_attr(not(test), macro_use(slog_o, o, slog_info, slog_kv))]
 #[cfg_attr(test, macro_use(slog_info))]
 extern crate slog;
-extern crate sloggers;
+extern crate slog_async;
+extern crate slog_scope;
+extern crate slog_stdlog;
+extern crate slog_term;
 extern crate snap;
 extern crate tempfile;
 extern crate walkdir;
 extern crate zstd;
+#[macro_use]
+extern crate serde_derive;
+extern crate serde_json;
 
 #[macro_use]
 pub mod compression;

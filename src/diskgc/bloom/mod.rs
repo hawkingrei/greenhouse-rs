@@ -105,33 +105,44 @@ impl Bloomgc {
                     info!("{}","save today bloom");
                 },
                 recv(nt) -> _ => {
-                    let totalp = config::total_put.load(Ordering::SeqCst) as u64;
-                    let bitmap = self.bloomfilter.bitmap();
-                    let dt = chrono::Local::now();
-                    let mut now:Timestamp = Timestamp::new();
-                    now.set_seconds(chrono::Local.ymd(dt.year(), dt.month(), dt.day()-1).and_hms_milli(0, 0, 0, 0).timestamp());
-
-                    let mut rec = Record::new();
-                    rec.set_time(now);
-                    rec.set_data(bitmap);
-                    rec.set_totalPut(totalp);
-
-                    if totalp > 200000 {
-                        self.all_bloomfilter.push(BloomEntry{
-                            bloom: self.bloomfilter.clone(),
-                            total_put: totalp,
-                        });
-                    }
-
-                    self.bloomfilter.clear();
-                    config::total_put.swap(0,Ordering::SeqCst);
+                    self.append_today_bloom();
+                    self.clear();
 
                     let ndt = chrono::Local.ymd(dt.year(), dt.month(), dt.day()+1).and_hms_milli(0, 0, 0, 0)-dt;
                     let nt = tick(ndt.to_std().unwrap());
-                    self.store.append_to_all_bloom(rec).unwrap();
+                   
                 }
             }
         }
+    }
+
+    fn append_today_bloom(&mut self) {
+        let totalp = config::total_put.load(Ordering::SeqCst) as u64;
+        let bitmap = self.bloomfilter.bitmap();
+        let dt = chrono::Local::now();
+        let mut now: Timestamp = Timestamp::new();
+        now.set_seconds(
+            chrono::Local
+                .ymd(dt.year(), dt.month(), dt.day() - 1)
+                .and_hms_milli(0, 0, 0, 0)
+                .timestamp(),
+        );
+
+        let mut rec = Record::new();
+        rec.set_time(now);
+        rec.set_data(bitmap);
+        rec.set_totalPut(totalp);
+
+        if totalp > 200000 {
+            self.all_bloomfilter.push(BloomEntry {
+                bloom: self.bloomfilter.clone(),
+                total_put: totalp,
+            });
+        }
+
+        self.bloomfilter.clear();
+        config::total_put.swap(0, Ordering::SeqCst);
+        self.store.append_to_all_bloom(rec).unwrap();
     }
 
     fn clear(&self) {
@@ -181,6 +192,10 @@ impl Bloomgc {
             .duration_since(SystemTime::UNIX_EPOCH)
             .unwrap()
             .as_secs();
+        if self.all_bloomfilter.len() < self.days {
+            return false;
+        }
+        
         for element in self.all_bloomfilter.iter().rev().take(self.days) {
             if !element.bloom.check(&p) {
                 return false;
