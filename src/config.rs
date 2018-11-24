@@ -37,16 +37,18 @@ pub mod log_level_serde {
 #[derive(Clone, Serialize, Deserialize, PartialEq, Debug)]
 #[serde(default)]
 #[serde(rename_all = "kebab-case")]
-pub struct ServeConfig {
+pub struct HttpServeConfig {
     pub path: String,
     pub metric_port: u32,
+    pub cache_port: u32,
 }
 
-impl Default for ServeConfig {
-    fn default() -> ServeConfig {
-        ServeConfig {
+impl Default for HttpServeConfig {
+    fn default() -> HttpServeConfig {
+        HttpServeConfig {
             path: "".to_owned(),
-            metric_port: 9090,
+            metric_port: 9092,
+            cache_port: 8088,
         }
     }
 }
