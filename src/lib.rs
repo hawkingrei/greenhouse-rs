@@ -48,6 +48,8 @@ extern crate serde_derive;
 extern crate serde_json;
 
 #[macro_use]
+pub mod util;
+#[macro_use]
 pub mod compression;
 pub mod config;
 pub mod disk;
@@ -55,4 +57,3 @@ pub mod diskgc;
 pub mod env;
 pub mod router;
 pub mod server;
-pub mod util;
