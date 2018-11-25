@@ -110,7 +110,7 @@ impl Bloomgc {
 
                     let ndt = chrono::Local.ymd(dt.year(), dt.month(), dt.day()+1).and_hms_milli(0, 0, 0, 0)-dt;
                     let nt = tick(ndt.to_std().unwrap());
-                   
+
                 }
             }
         }
@@ -195,7 +195,7 @@ impl Bloomgc {
         if self.all_bloomfilter.len() < self.days {
             return false;
         }
-        
+
         for element in self.all_bloomfilter.iter().rev().take(self.days) {
             if !element.bloom.check(&p) {
                 return false;
