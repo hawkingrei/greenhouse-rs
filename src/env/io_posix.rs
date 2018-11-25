@@ -176,10 +176,6 @@ impl PosixOverwriteFile {
                     0o644,
                 );
                 if !(fd < 0 && *errno_location() as i32 == libc::EINTR) {
-                    error!(
-                        "{}",
-                        format!("fail to open file {:?} {:?} ", fd, *errno_location())
-                    );
                     break;
                 }
                 warn!("{} {} {}", "wait for open", fd, *errno_location());
@@ -380,10 +376,6 @@ impl PosixAppendFile {
                     0o644,
                 );
                 if !(fd < 0 && *errno_location() as i32 == libc::EINTR) {
-                    error!(
-                        "{}",
-                        format!("fail to open file {:?} {:?} ", fd, *errno_location())
-                    );
                     break;
                 }
                 warn!("{} {} {}", "wait for open", fd, *errno_location());
