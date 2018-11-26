@@ -17,9 +17,9 @@ mod imp {
 
     #[allow(dead_code)]
     pub fn handle_signal() {
-        use nix::sys::signal::{SIGUSR1, SIGUSR2, SIGHUP, SIGINT, SIGTERM};
-        use signal::trap::Trap;
         use log::info;
+        use nix::sys::signal::{SIGHUP, SIGINT, SIGTERM, SIGUSR1, SIGUSR2};
+        use signal::trap::Trap;
         let trap = Trap::trap(&[SIGTERM, SIGINT, SIGHUP, SIGUSR1, SIGUSR2]);
         for sig in trap {
             match sig {

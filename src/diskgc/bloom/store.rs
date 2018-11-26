@@ -3,6 +3,8 @@ use crate::env::io_posix::PosixAppendFile;
 use crate::env::io_posix::PosixOverwriteFile;
 use crate::env::EnvOptions;
 use crate::env::OverwriteFile;
+use chrono::offset::Local;
+use protobuf::well_known_types::Timestamp;
 use protobuf::Message;
 use std::io;
 use std::path::PathBuf;
@@ -55,4 +57,17 @@ impl GcStore {
         let blooms = Arc::get_mut(&mut self._all_bloom_fd_).unwrap();
         blooms.write(r.write_to_bytes().unwrap())
     }
+}
+
+#[test]
+fn test_bloomgc() {
+    let mut gc = new_gc_store(PathBuf::from("./test_data"));
+    let mut rec = Record::new();
+    let mut now: Timestamp = Timestamp::new();
+    now.set_seconds(chrono::Local::now().timestamp());
+    rec.set_time(now);
+    rec.set_data(vec![1]);
+    rec.set_totalPut(1234);
+    gc.append_to_all_bloom(rec);
+    gc.get_all_bloom();
 }

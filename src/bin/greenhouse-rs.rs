@@ -29,11 +29,11 @@ use greenhouse::disk::get_disk_usage_prom;
 use greenhouse::diskgc::bloom::Bloomgc;
 use greenhouse::diskgc::lazy;
 use greenhouse::router;
-use greenhouse::server::http::HttpServe;
-use greenhouse::server::metric::MetricServer;
-use greenhouse::server::disk_usage_server::disk_usage_server;
-use greenhouse::server::lazygc::lazygc_server;
 use greenhouse::server::bloomgc::bloomgc_server;
+use greenhouse::server::disk_usage_server::disk_usage_server;
+use greenhouse::server::http::HttpServe;
+use greenhouse::server::lazygc::lazygc_server;
+use greenhouse::server::metric::MetricServer;
 
 mod util;
 use util::signal_handler;
@@ -82,18 +82,18 @@ fn main() {
         .unwrap();
     let metrics_dir = _dir.to_string().to_string();
     let gcpath = metrics_dir.clone();
-     
+
     env_logger::init();
     let (tx, rx) = crossbeam_channel::unbounded::<PathBuf>();
 
-    let mut http_server = HttpServe::new("0.0.0.0".to_string(),_cache_port,_dir,tx);
+    let mut http_server = HttpServe::new("0.0.0.0".to_string(), _cache_port, _dir, tx);
     let mut metrics_server = MetricServer::new(_metrics_port);
 
     let pathbuf = Path::new(&gcpath).to_path_buf();
     let ten_millis = time::Duration::from_secs(2);
-    let mut disk_usage = disk_usage_server::new(ten_millis,pathbuf.clone());
+    let mut disk_usage = disk_usage_server::new(ten_millis, pathbuf.clone());
     let mut lazygc = lazygc_server::new(pathbuf.clone(), 5.0, 20.0);
-    let mut bloomgc = bloomgc_server::new(rx,pathbuf.clone(),3);
+    let mut bloomgc = bloomgc_server::new(rx, pathbuf.clone(), 3);
 
     http_server.start().unwrap();
     metrics_server.start().unwrap();

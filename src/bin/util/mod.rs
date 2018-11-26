@@ -1,4 +1,3 @@
-
 pub(crate) mod signal_handler;
 
 /// Returns the tikv version information.
