@@ -9,8 +9,8 @@ use protobuf::Message;
 use std::io;
 use std::path::PathBuf;
 use std::sync::Arc;
-use std::time;
 use std::thread;
+use std::time;
 
 #[derive(Debug)]
 pub struct GcStore {
@@ -45,11 +45,15 @@ impl GcStore {
     }
 
     pub fn get_all_bloom(&mut self) -> Vec<Record> {
+        info!("get_all_bloom");
         let mut result: Vec<Record> = Vec::new();
         let blooms = Arc::get_mut(&mut self._all_bloom_fd_).unwrap();
         for bloom in blooms {
             let mut r = Record::new();
-            r.merge_from_bytes(bloom.as_slice()).unwrap();
+            if let Err(e) = r.merge_from_bytes(bloom.as_slice()) {
+                info!("fail to get all bloom {:?}", e);
+                continue;
+            };
             result.push(r);
         }
         return result;
@@ -57,7 +61,8 @@ impl GcStore {
 
     pub fn append_to_all_bloom(&mut self, r: Record) -> io::Result<()> {
         let blooms = Arc::get_mut(&mut self._all_bloom_fd_).unwrap();
-        blooms.write(r.write_to_bytes().unwrap())
+        let context = r.write_to_bytes().unwrap();
+        blooms.write(context)
     }
 }
 
@@ -67,20 +72,44 @@ fn test_bloomgc() {
     let mut rec = Record::new();
     let mut now: Timestamp = Timestamp::new();
     now.set_seconds(chrono::Local::now().timestamp());
-    rec.set_time(now);
-    rec.set_data(vec![1]);
-    rec.set_totalPut(1234);
-    gc.append_to_all_bloom(rec);
+    {
+        rec.set_time(now);
+        rec.set_data(vec![1]);
+        rec.set_totalPut(1234);
+        gc.append_to_all_bloom(rec);
+    }
+
     let ten_millis = time::Duration::from_secs(3);
     thread::sleep(ten_millis);
-    
+
+    let mut rec2 = Record::new();
     now = Timestamp::new();
     now.set_seconds(chrono::Local::now().timestamp());
-    rec.set_time(now);
-    rec.set_data(vec![1,2]);
-    rec.set_totalPut(12345);
-    gc.append_to_all_bloom(rec);
+    {
+        rec2.set_time(now);
+        rec2.set_data(vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+        rec2.set_totalPut(12345);
+        gc.append_to_all_bloom(rec2);
+    }
 
+    let mut rec3 = Record::new();
+    now = Timestamp::new();
+    now.set_seconds(chrono::Local::now().timestamp());
+    {
+        rec3.set_time(now);
+        rec3.set_data(vec![1, 2, 3]);
+        rec3.set_totalPut(123456);
+        gc.append_to_all_bloom(rec3);
+    }
 
-    gc.get_all_bloom();
+    let result = gc.get_all_bloom();
+    let res1 = result.get(0).unwrap();
+    assert_eq!(res1.get_data().to_vec(), vec![1]);
+    let res2 = result.get(1).unwrap();
+    assert_eq!(
+        res2.get_data().to_vec(),
+        vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    );
+    let res3 = result.get(2).unwrap();
+    assert_eq!(res3.get_data().to_vec(), vec![1, 2, 3]);
 }

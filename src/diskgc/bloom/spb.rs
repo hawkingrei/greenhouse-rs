@@ -3,7 +3,7 @@
 
 // https://github.com/Manishearth/rust-clippy/issues/702
 #![allow(unknown_lints)]
-#![allow(clippy::all)]
+#![allow(clippy)]
 
 #![cfg_attr(rustfmt, rustfmt_skip)]
 
@@ -25,8 +25,8 @@ use protobuf::ProtobufEnum as ProtobufEnum_imported_for_functions;
 pub struct Record {
     // message fields
     pub time: ::protobuf::SingularPtrField<::protobuf::well_known_types::Timestamp>,
-    pub data: ::std::vec::Vec<u8>,
     pub totalPut: u64,
+    pub data: ::std::vec::Vec<u8>,
     // special fields
     pub unknown_fields: ::protobuf::UnknownFields,
     pub cached_size: ::protobuf::CachedSize,
@@ -70,7 +70,22 @@ impl Record {
         self.time.as_ref().unwrap_or_else(|| ::protobuf::well_known_types::Timestamp::default_instance())
     }
 
-    // bytes data = 2;
+    // uint64 totalPut = 2;
+
+    pub fn clear_totalPut(&mut self) {
+        self.totalPut = 0;
+    }
+
+    // Param is passed by value, moved
+    pub fn set_totalPut(&mut self, v: u64) {
+        self.totalPut = v;
+    }
+
+    pub fn get_totalPut(&self) -> u64 {
+        self.totalPut
+    }
+
+    // bytes data = 3;
 
     pub fn clear_data(&mut self) {
         self.data.clear();
@@ -95,21 +110,6 @@ impl Record {
     pub fn get_data(&self) -> &[u8] {
         &self.data
     }
-
-    // uint64 totalPut = 3;
-
-    pub fn clear_totalPut(&mut self) {
-        self.totalPut = 0;
-    }
-
-    // Param is passed by value, moved
-    pub fn set_totalPut(&mut self, v: u64) {
-        self.totalPut = v;
-    }
-
-    pub fn get_totalPut(&self) -> u64 {
-        self.totalPut
-    }
 }
 
 impl ::protobuf::Message for Record {
@@ -130,14 +130,14 @@ impl ::protobuf::Message for Record {
                     ::protobuf::rt::read_singular_message_into(wire_type, is, &mut self.time)?;
                 },
                 2 => {
-                    ::protobuf::rt::read_singular_proto3_bytes_into(wire_type, is, &mut self.data)?;
-                },
-                3 => {
                     if wire_type != ::protobuf::wire_format::WireTypeVarint {
                         return ::std::result::Result::Err(::protobuf::rt::unexpected_wire_type(wire_type));
                     }
                     let tmp = is.read_uint64()?;
                     self.totalPut = tmp;
+                },
+                3 => {
+                    ::protobuf::rt::read_singular_proto3_bytes_into(wire_type, is, &mut self.data)?;
                 },
                 _ => {
                     ::protobuf::rt::read_unknown_or_skip_group(field_number, wire_type, is, self.mut_unknown_fields())?;
@@ -155,11 +155,11 @@ impl ::protobuf::Message for Record {
             let len = v.compute_size();
             my_size += 1 + ::protobuf::rt::compute_raw_varint32_size(len) + len;
         }
-        if !self.data.is_empty() {
-            my_size += ::protobuf::rt::bytes_size(2, &self.data);
-        }
         if self.totalPut != 0 {
-            my_size += ::protobuf::rt::value_size(3, self.totalPut, ::protobuf::wire_format::WireTypeVarint);
+            my_size += ::protobuf::rt::value_size(2, self.totalPut, ::protobuf::wire_format::WireTypeVarint);
+        }
+        if !self.data.is_empty() {
+            my_size += ::protobuf::rt::bytes_size(3, &self.data);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.get_unknown_fields());
         self.cached_size.set(my_size);
@@ -172,11 +172,11 @@ impl ::protobuf::Message for Record {
             os.write_raw_varint32(v.get_cached_size())?;
             v.write_to_with_cached_sizes(os)?;
         }
-        if !self.data.is_empty() {
-            os.write_bytes(2, &self.data)?;
-        }
         if self.totalPut != 0 {
-            os.write_uint64(3, self.totalPut)?;
+            os.write_uint64(2, self.totalPut)?;
+        }
+        if !self.data.is_empty() {
+            os.write_bytes(3, &self.data)?;
         }
         os.write_unknown_fields(self.get_unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -225,15 +225,15 @@ impl ::protobuf::Message for Record {
                     |m: &Record| { &m.time },
                     |m: &mut Record| { &mut m.time },
                 ));
-                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeBytes>(
-                    "data",
-                    |m: &Record| { &m.data },
-                    |m: &mut Record| { &mut m.data },
-                ));
                 fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeUint64>(
                     "totalPut",
                     |m: &Record| { &m.totalPut },
                     |m: &mut Record| { &mut m.totalPut },
+                ));
+                fields.push(::protobuf::reflect::accessor::make_simple_field_accessor::<_, ::protobuf::types::ProtobufTypeBytes>(
+                    "data",
+                    |m: &Record| { &m.data },
+                    |m: &mut Record| { &mut m.data },
                 ));
                 ::protobuf::reflect::MessageDescriptor::new::<Record>(
                     "Record",
@@ -258,8 +258,8 @@ impl ::protobuf::Message for Record {
 impl ::protobuf::Clear for Record {
     fn clear(&mut self) {
         self.clear_time();
-        self.clear_data();
         self.clear_totalPut();
+        self.clear_data();
         self.unknown_fields.clear();
     }
 }
@@ -279,21 +279,21 @@ impl ::protobuf::reflect::ProtobufValue for Record {
 static file_descriptor_proto_data: &'static [u8] = b"\
     \n\tspb.proto\x12\x05bloom\x1a\x1fgoogle/protobuf/timestamp.proto\"h\n\
     \x06Record\x12.\n\x04time\x18\x01\x20\x01(\x0b2\x1a.google.protobuf.Time\
-    stampR\x04time\x12\x12\n\x04data\x18\x02\x20\x01(\x0cR\x04data\x12\x1a\n\
-    \x08totalPut\x18\x03\x20\x01(\x04R\x08totalPutJ\x91\x02\n\x06\x12\x04\0\
-    \0\n\x01\n\x08\n\x01\x0c\x12\x03\0\0\x12\n\x08\n\x01\x02\x12\x03\x02\x08\
-    \r\n\t\n\x02\x03\0\x12\x03\x04\x07(\n\n\n\x02\x04\0\x12\x04\x06\0\n\x01\
-    \n\n\n\x03\x04\0\x01\x12\x03\x06\x08\x0e\n\x0b\n\x04\x04\0\x02\0\x12\x03\
-    \x07\x08+\n\r\n\x05\x04\0\x02\0\x04\x12\x04\x07\x08\x06\x10\n\x0c\n\x05\
-    \x04\0\x02\0\x06\x12\x03\x07\x08!\n\x0c\n\x05\x04\0\x02\0\x01\x12\x03\
-    \x07\"&\n\x0c\n\x05\x04\0\x02\0\x03\x12\x03\x07)*\n\x0b\n\x04\x04\0\x02\
-    \x01\x12\x03\x08\x08\x18\n\r\n\x05\x04\0\x02\x01\x04\x12\x04\x08\x08\x07\
-    +\n\x0c\n\x05\x04\0\x02\x01\x05\x12\x03\x08\x08\r\n\x0c\n\x05\x04\0\x02\
-    \x01\x01\x12\x03\x08\x0e\x12\n\x0c\n\x05\x04\0\x02\x01\x03\x12\x03\x08\
-    \x16\x17\n\x0b\n\x04\x04\0\x02\x02\x12\x03\t\x08\x1c\n\r\n\x05\x04\0\x02\
-    \x02\x04\x12\x04\t\x08\x08\x18\n\x0c\n\x05\x04\0\x02\x02\x05\x12\x03\t\
-    \x08\x0e\n\x0c\n\x05\x04\0\x02\x02\x01\x12\x03\t\x0f\x17\n\x0c\n\x05\x04\
-    \0\x02\x02\x03\x12\x03\t\x1a\x1bb\x06proto3\
+    stampR\x04time\x12\x1a\n\x08totalPut\x18\x02\x20\x01(\x04R\x08totalPut\
+    \x12\x12\n\x04data\x18\x03\x20\x01(\x0cR\x04dataJ\x91\x02\n\x06\x12\x04\
+    \0\0\n\x01\n\x08\n\x01\x0c\x12\x03\0\0\x12\n\x08\n\x01\x02\x12\x03\x02\
+    \x08\r\n\t\n\x02\x03\0\x12\x03\x04\x07(\n\n\n\x02\x04\0\x12\x04\x06\0\n\
+    \x01\n\n\n\x03\x04\0\x01\x12\x03\x06\x08\x0e\n\x0b\n\x04\x04\0\x02\0\x12\
+    \x03\x07\x08+\n\r\n\x05\x04\0\x02\0\x04\x12\x04\x07\x08\x06\x10\n\x0c\n\
+    \x05\x04\0\x02\0\x06\x12\x03\x07\x08!\n\x0c\n\x05\x04\0\x02\0\x01\x12\
+    \x03\x07\"&\n\x0c\n\x05\x04\0\x02\0\x03\x12\x03\x07)*\n\x0b\n\x04\x04\0\
+    \x02\x01\x12\x03\x08\x08\x1c\n\r\n\x05\x04\0\x02\x01\x04\x12\x04\x08\x08\
+    \x07+\n\x0c\n\x05\x04\0\x02\x01\x05\x12\x03\x08\x08\x0e\n\x0c\n\x05\x04\
+    \0\x02\x01\x01\x12\x03\x08\x0f\x17\n\x0c\n\x05\x04\0\x02\x01\x03\x12\x03\
+    \x08\x1a\x1b\n\x0b\n\x04\x04\0\x02\x02\x12\x03\t\x08\x18\n\r\n\x05\x04\0\
+    \x02\x02\x04\x12\x04\t\x08\x08\x1c\n\x0c\n\x05\x04\0\x02\x02\x05\x12\x03\
+    \t\x08\r\n\x0c\n\x05\x04\0\x02\x02\x01\x12\x03\t\x0e\x12\n\x0c\n\x05\x04\
+    \0\x02\x02\x03\x12\x03\t\x16\x17b\x06proto3\
 ";
 
 static mut file_descriptor_proto_lazy: ::protobuf::lazy::Lazy<::protobuf::descriptor::FileDescriptorProto> = ::protobuf::lazy::Lazy {

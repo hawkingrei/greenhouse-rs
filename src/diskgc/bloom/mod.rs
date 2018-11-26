@@ -90,7 +90,6 @@ impl Bloomgc {
         loop {
             select! {
                 recv(self.receiver) -> path => {
-                    info!("{}","do it");
                     if let Ok(p) = path { self.bloomfilter.set(&p) };
                 },
                 recv(t) -> _ => {
@@ -110,7 +109,6 @@ impl Bloomgc {
 
                     let ndt = chrono::Local.ymd(dt.year(), dt.month(), dt.day()+1).and_hms_milli(0, 0, 0, 0)-dt;
                     let nt = tick(ndt.to_std().unwrap());
-
                 }
             }
         }
@@ -132,17 +130,16 @@ impl Bloomgc {
         rec.set_time(now);
         rec.set_data(bitmap);
         rec.set_totalPut(totalp);
-
+        self.store.append_to_all_bloom(rec).unwrap();
         if totalp > 200000 {
             self.all_bloomfilter.push(BloomEntry {
                 bloom: self.bloomfilter.clone(),
                 total_put: totalp,
             });
         }
-
         self.bloomfilter.clear();
         config::total_put.swap(0, Ordering::SeqCst);
-        self.store.append_to_all_bloom(rec).unwrap();
+        info!("append today bloom")
     }
 
     fn clear(&self) {
