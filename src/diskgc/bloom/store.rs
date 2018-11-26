@@ -69,7 +69,7 @@ fn test_bloomgc() {
     rec.set_data(vec![1]);
     rec.set_totalPut(1234);
     gc.append_to_all_bloom(rec);
-    let ten_millis = time::Duration::from_seconds(3);
+    let ten_millis = time::Duration::from_secs(3);
     thread::sleep(ten_millis);
     
     now = Timestamp::new();
