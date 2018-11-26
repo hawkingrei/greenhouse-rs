@@ -10,6 +10,7 @@ use std::io;
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::time;
+use std::thread;
 
 #[derive(Debug)]
 pub struct GcStore {
