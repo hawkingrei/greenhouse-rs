@@ -3,6 +3,7 @@ use crate::env::io_posix::PosixAppendFile;
 use crate::env::io_posix::PosixOverwriteFile;
 use crate::env::EnvOptions;
 use crate::env::OverwriteFile;
+use crate::util::bloomfilter::Bloom;
 use chrono::offset::Local;
 use protobuf::well_known_types::Timestamp;
 use protobuf::Message;
@@ -56,6 +57,7 @@ impl GcStore {
             };
             result.push(r);
         }
+        info!("get_all_bloom end");
         return result;
     }
 
@@ -73,8 +75,9 @@ fn test_bloomgc() {
     let mut now: Timestamp = Timestamp::new();
     now.set_seconds(chrono::Local::now().timestamp());
     {
+        let b: Bloom<PathBuf> = Bloom::new_for_fp_rate(500000, 0.1);
         rec.set_time(now);
-        rec.set_data(vec![1]);
+        rec.set_data(b.bitmap());
         rec.set_totalPut(1234);
         gc.append_to_all_bloom(rec);
     }
@@ -86,8 +89,9 @@ fn test_bloomgc() {
     now = Timestamp::new();
     now.set_seconds(chrono::Local::now().timestamp());
     {
+        let b: Bloom<PathBuf> = Bloom::new_for_fp_rate(500000, 0.1);
         rec2.set_time(now);
-        rec2.set_data(vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+        rec2.set_data(b.bitmap());
         rec2.set_totalPut(12345);
         gc.append_to_all_bloom(rec2);
     }
@@ -96,20 +100,18 @@ fn test_bloomgc() {
     now = Timestamp::new();
     now.set_seconds(chrono::Local::now().timestamp());
     {
+        let b: Bloom<PathBuf> = Bloom::new_for_fp_rate(500000, 0.1);
         rec3.set_time(now);
-        rec3.set_data(vec![1, 2, 3]);
+        rec3.set_data(b.bitmap());
         rec3.set_totalPut(123456);
         gc.append_to_all_bloom(rec3);
     }
 
     let result = gc.get_all_bloom();
     let res1 = result.get(0).unwrap();
-    assert_eq!(res1.get_data().to_vec(), vec![1]);
+    assert_eq!(res1.get_totalPut(), 1234);
     let res2 = result.get(1).unwrap();
-    assert_eq!(
-        res2.get_data().to_vec(),
-        vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    );
+    assert_eq!(res2.get_totalPut(), 12345);
     let res3 = result.get(2).unwrap();
-    assert_eq!(res3.get_data().to_vec(), vec![1, 2, 3]);
+    assert_eq!(res3.get_totalPut(), 123456);
 }

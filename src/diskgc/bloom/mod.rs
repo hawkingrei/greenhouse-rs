@@ -40,7 +40,7 @@ pub struct Bloomgc {
     days: usize,
     receiver: Receiver<PathBuf>,
     bloomfilter: Bloom<PathBuf>,
-    all_bloomfilter: Vec<BloomEntry>,
+    all_bloomfilter: Box<Vec<BloomEntry>>,
     store: GcStore,
 }
 
@@ -52,6 +52,7 @@ impl Bloomgc {
         let mut store = new_gc_store(gc_file_path);
         let mut all_bloom: Vec<BloomEntry> = Vec::new();
         for get_bloom in store.get_all_bloom() {
+            info!("{}", "bgc new start");
             let bloom: Bloom<PathBuf> = Bloom::from_existing(
                 get_bloom.data.as_slice(),
                 NUMBER_OF_BITS,
@@ -75,7 +76,7 @@ impl Bloomgc {
                 [(2749812374, 12341234), (574893759834, 1298374918234)],
             ),
             store: store,
-            all_bloomfilter: all_bloom,
+            all_bloomfilter: Box::new(all_bloom),
         }
     }
 

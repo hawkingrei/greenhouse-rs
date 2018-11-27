@@ -18,7 +18,7 @@ pub struct bloomgc_server {
 }
 
 impl bloomgc_server {
-    pub fn new(rx: Receiver<PathBuf>, p: PathBuf, days: usize) -> bloomgc_server {
+    pub fn new(rx: Receiver<PathBuf>, p: PathBuf, days: usize) -> bloomgc_server {      
         bloomgc_server {
             bloomgc_handle: None,
             path: p,
@@ -28,6 +28,7 @@ impl bloomgc_server {
     }
 
     pub fn start(&mut self) -> Result<(), io::Error> {
+        info!("new bgc  builder");
         let builder = thread::Builder::new().name(thd_name!(format!("{}", "bloomgc-service")));
         let mut bgc = Bloomgc::new(self.rx.clone(), self.path.clone(), self.days);
         let h = builder.spawn(move || {

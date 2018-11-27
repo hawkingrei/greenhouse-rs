@@ -513,7 +513,8 @@ fn test_append_file_iter() {
     let mut op: EnvOptions = EnvOptions::default();
     let mut of: PosixAppendFile =
         PosixAppendFile::new(PathBuf::from("./test_data/append_file_iter_test"), op).unwrap();
-    of.write("abcdefghijklmnopqrstuvwxyz ".as_bytes().to_vec()).unwrap();
+    of.write("abcdefghijklmnopqrstuvwxyz ".as_bytes().to_vec())
+        .unwrap();
     of.write("qwe".as_bytes().to_vec()).unwrap();
     let mut result: Vec<u8> = Vec::new();
     for mut r in of {

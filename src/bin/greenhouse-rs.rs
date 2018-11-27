@@ -95,11 +95,13 @@ fn main() {
     let mut lazygc = lazygc_server::new(pathbuf.clone(), 5.0, 20.0);
     let mut bloomgc = bloomgc_server::new(rx, pathbuf.clone(), 3);
 
-    http_server.start().unwrap();
     metrics_server.start().unwrap();
     disk_usage.start().unwrap();
     lazygc.start().unwrap();
     bloomgc.start().unwrap();
+    http_server.start().unwrap();
+    
+
 
     signal_handler::handle_signal();
     http_server.stop().unwrap();
