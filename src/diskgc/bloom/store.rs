@@ -41,11 +41,7 @@ impl GcStore {
         Arc::get_mut(&mut self._today_fd_).unwrap().write(r)
     }
 
-    pub fn get_today_bloom(self) -> io::Result<Vec<u8>> {
-        self._today_fd_.read()
-    }
-
-    pub fn get_all_bloom(&mut self) -> Vec<Record> {
+    pub fn get_all(&mut self) -> (Vec<Record>, io::Result<Vec<u8>>) {
         info!("get_all_bloom");
         let mut result: Vec<Record> = Vec::new();
         let blooms = Arc::get_mut(&mut self._all_bloom_fd_).unwrap();
@@ -58,7 +54,7 @@ impl GcStore {
             result.push(r);
         }
         info!("get_all_bloom end");
-        return result;
+        return (result, self._today_fd_.read());
     }
 
     pub fn append_to_all_bloom(&mut self, r: Record) -> io::Result<()> {

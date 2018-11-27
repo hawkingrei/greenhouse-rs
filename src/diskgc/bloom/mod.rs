@@ -44,16 +44,40 @@ pub struct Bloomgc {
     bloomfilter: Arc<spin::Mutex<Bloom<PathBuf>>>,
     all_bloomfilter: Box<Vec<BloomEntry>>,
     store: GcStore,
+    next_time: chrono::DateTime<chrono::Local>,
 }
 
 impl Bloomgc {
+    pub fn get_next_time(&self) -> chrono::DateTime<chrono::Local> {
+        self.next_time
+    }
+
+    pub fn set_next_time(&mut self, nt: chrono::DateTime<chrono::Local>) {
+        self.next_time = nt;
+    }
+
     pub fn new(rx: Receiver<PathBuf>, p: PathBuf, days: usize) -> Bloomgc {
         let path = p.clone();
         let mut gc_file_path = p.clone();
         gc_file_path.pop();
         let mut store = new_gc_store(gc_file_path);
         let mut all_bloom: Vec<BloomEntry> = Vec::new();
-        for get_bloom in store.get_all_bloom() {
+        let (all, today) = store.get_all();
+        let bloomfilter :Arc<spin::Mutex<Bloom<PathBuf>>> = match today {
+            Ok(r) => Arc::new(spin::Mutex::new(Bloom::from_existing(
+                &r.as_slice(),
+                NUMBER_OF_BITS,
+                NUMBER_OF_HASH_FUNCTIONS,
+                [(2749812374, 12341234), (574893759834, 1298374918234)],
+            ))),
+            Err(_) => Arc::new(spin::Mutex::new(Bloom::from_existing(
+                &[0; BITMAP_SIZE],
+                NUMBER_OF_BITS,
+                NUMBER_OF_HASH_FUNCTIONS,
+                [(2749812374, 12341234), (574893759834, 1298374918234)],
+            ))),
+        };
+        for get_bloom in all {
             info!("{}", "bgc new start");
             let bloom: Bloom<PathBuf> = Bloom::from_existing(
                 get_bloom.data.as_slice(),
@@ -67,83 +91,26 @@ impl Bloomgc {
                 total_put: totalput,
             });
         }
+        let dt = chrono::Local::now();
+        let ndt = chrono::Local
+            .ymd(dt.year(), dt.month(), dt.day() + 1)
+            .and_hms_milli(0, 0, 0, 0);
+        let bloomfilter: Arc<spin::Mutex<Bloom<PathBuf>>> =
+            Arc::new(spin::Mutex::new(Bloom::from_existing(
+                &[0; BITMAP_SIZE],
+                NUMBER_OF_BITS,
+                NUMBER_OF_HASH_FUNCTIONS,
+                [(2749812374, 12341234), (574893759834, 1298374918234)],
+            )));
         Bloomgc {
             path: path,
             receiver: rx,
             days: days,
-            bloomfilter: Arc::new(spin::Mutex::new(Bloom::from_existing(
-                &[0; BITMAP_SIZE],
-                NUMBER_OF_BITS,
-                NUMBER_OF_HASH_FUNCTIONS,
-                [(2749812374, 12341234), (574893759834, 1298374918234)],
-            ))),
+            bloomfilter: bloomfilter,
             store: store,
             all_bloomfilter: Box::new(all_bloom),
+            next_time: ndt,
         }
-    }
-
-    pub fn init(mut self) {
-        let result = self.store.get_today_bloom();
-        let bloomfilter = match result {
-            Ok(r) => Arc::new(spin::Mutex::new(Bloom::from_existing(
-                &r,
-                NUMBER_OF_BITS,
-                NUMBER_OF_HASH_FUNCTIONS,
-                [(2749812374, 12341234), (574893759834, 1298374918234)],
-            ))),
-            Err(_) => Arc::new(spin::Mutex::new(Bloom::from_existing(
-                &[0; BITMAP_SIZE],
-                NUMBER_OF_BITS,
-                NUMBER_OF_HASH_FUNCTIONS,
-                [(2749812374, 12341234), (574893759834, 1298374918234)],
-            ))),
-        };
-        self.bloomfilter = bloomfilter;
-    }
-
-    pub fn serve(&mut self) {
-        let dt = chrono::Local::now();
-        let ndt = chrono::Local
-            .ymd(dt.year(), dt.month(), dt.day() + 1)
-            .and_hms_milli(0, 0, 0, 0)
-            - dt;
-        let nt = tick(ndt.to_std().unwrap());
-        let t = tick(Duration::from_secs(10));
-        loop {
-            select! {
-                recv(self.receiver) -> path => {
-                    if let Ok(p) = path {
-                        let mut guard = self.bloomfilter.lock();
-                        guard.set(&p);
-                        drop(guard);
-                    };
-                },
-                recv(t) -> _ => {
-                    let mut rec = Record::new();
-                    let mut now:Timestamp = Timestamp::new();
-                    now.set_seconds(Local::now().timestamp());
-                    rec.set_time(now);
-                    let mut guard = self.bloomfilter.lock();
-                    rec.set_data(guard.bitmap());
-                    drop(guard);
-                    rec.set_totalPut(config::total_put.load(Ordering::SeqCst) as u64);
-                    let result = rec.write_to_bytes().unwrap();
-                    self.store.save_today_bloom(result).unwrap();
-                    info!("{}","save today bloom");
-                },
-                recv(nt) -> _ => {
-                    self.append_today_bloom();
-                    self.clear();
-
-                    let ndt = chrono::Local.ymd(dt.year(), dt.month(), dt.day()+1).and_hms_milli(0, 0, 0, 0)-dt;
-                    let nt = tick(ndt.to_std().unwrap());
-                }
-            }
-        }
-    }
-
-    pub fn schedule(&mut self) {
-        
     }
 
     fn append_today_bloom(&mut self) {
@@ -218,6 +185,47 @@ impl Bloomgc {
                     continue;
                 }
             };
+        }
+    }
+
+    pub fn serve(&mut self) {
+        let t = tick(Duration::from_secs(10));
+        loop {
+            select! {
+                recv(self.receiver) -> path => {
+                    if let Ok(p) = path {
+                        let mut guard = self.bloomfilter.lock();
+                        guard.set(&p);
+                        drop(guard);
+                    };
+                },
+                recv(t) -> _ => {
+                    let mut rec = Record::new();
+                    let mut now:Timestamp = Timestamp::new();
+                    now.set_seconds(Local::now().timestamp());
+                    rec.set_time(now);
+                    let mut guard = self.bloomfilter.lock();
+                    rec.set_data(guard.bitmap());
+                    drop(guard);
+                    rec.set_totalPut(config::total_put.load(Ordering::SeqCst) as u64);
+                    let result = rec.write_to_bytes().unwrap();
+                    self.store.save_today_bloom(result).unwrap();
+                    info!("{}","save today bloom");
+                },
+                default(Duration::from_secs(1)) => {
+                    if chrono::Local::now() > self.get_next_time() {
+                        self.append_today_bloom();
+                        self.clear();
+
+                        let dt = chrono::Local::now();
+                        self.set_next_time(
+                            chrono::Local
+                                .ymd(dt.year(), dt.month(), dt.day() + 1)
+                                .and_hms_milli(0, 0, 0, 0),
+                        );
+                    }
+                },
+            }
         }
     }
 

@@ -35,7 +35,6 @@ impl bloomgc_server {
             info!("bgc start");
             bgc.serve();
         })?;
-
         self.bloomgc_handle = Some(h);
         Ok(())
     }
