@@ -100,9 +100,9 @@ fn main() {
     lazygc.start().unwrap();
     bloomgc.start().unwrap();
     http_server.start().unwrap();
-    
+
     signal_handler::handle_signal();
-    
+
     http_server.stop().unwrap();
     metrics_server.stop().unwrap();
     disk_usage.stop().unwrap();

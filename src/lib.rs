@@ -46,6 +46,7 @@ extern crate zstd;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde_json;
+extern crate spin;
 
 #[macro_use]
 pub mod util;

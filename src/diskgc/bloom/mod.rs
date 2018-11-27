@@ -9,10 +9,12 @@ use crossbeam_channel::Receiver;
 use log::info;
 use protobuf::well_known_types::Timestamp;
 use protobuf::Message;
+use spin;
 use std::fs;
 use std::os::unix::fs::MetadataExt;
 use std::path::PathBuf;
 use std::sync::atomic::Ordering;
+use std::sync::Arc;
 use std::time::Duration;
 use std::time::SystemTime;
 
@@ -39,7 +41,7 @@ pub struct Bloomgc {
     path: PathBuf,
     days: usize,
     receiver: Receiver<PathBuf>,
-    bloomfilter: Bloom<PathBuf>,
+    bloomfilter: Arc<spin::Mutex<Bloom<PathBuf>>>,
     all_bloomfilter: Box<Vec<BloomEntry>>,
     store: GcStore,
 }
@@ -69,15 +71,34 @@ impl Bloomgc {
             path: path,
             receiver: rx,
             days: days,
-            bloomfilter: Bloom::from_existing(
+            bloomfilter: Arc::new(spin::Mutex::new(Bloom::from_existing(
                 &[0; BITMAP_SIZE],
                 NUMBER_OF_BITS,
                 NUMBER_OF_HASH_FUNCTIONS,
                 [(2749812374, 12341234), (574893759834, 1298374918234)],
-            ),
+            ))),
             store: store,
             all_bloomfilter: Box::new(all_bloom),
         }
+    }
+
+    pub fn init(mut self) {
+        let result = self.store.get_today_bloom();
+        let bloomfilter = match result {
+            Ok(r) => Arc::new(spin::Mutex::new(Bloom::from_existing(
+                &r,
+                NUMBER_OF_BITS,
+                NUMBER_OF_HASH_FUNCTIONS,
+                [(2749812374, 12341234), (574893759834, 1298374918234)],
+            ))),
+            Err(_) => Arc::new(spin::Mutex::new(Bloom::from_existing(
+                &[0; BITMAP_SIZE],
+                NUMBER_OF_BITS,
+                NUMBER_OF_HASH_FUNCTIONS,
+                [(2749812374, 12341234), (574893759834, 1298374918234)],
+            ))),
+        };
+        self.bloomfilter = bloomfilter;
     }
 
     pub fn serve(&mut self) {
@@ -91,14 +112,20 @@ impl Bloomgc {
         loop {
             select! {
                 recv(self.receiver) -> path => {
-                    if let Ok(p) = path { self.bloomfilter.set(&p) };
+                    if let Ok(p) = path {
+                        let mut guard = self.bloomfilter.lock();
+                        guard.set(&p);
+                        drop(guard);
+                    };
                 },
                 recv(t) -> _ => {
                     let mut rec = Record::new();
                     let mut now:Timestamp = Timestamp::new();
                     now.set_seconds(Local::now().timestamp());
                     rec.set_time(now);
-                    rec.set_data(self.bloomfilter.bitmap());
+                    let mut guard = self.bloomfilter.lock();
+                    rec.set_data(guard.bitmap());
+                    drop(guard);
                     rec.set_totalPut(config::total_put.load(Ordering::SeqCst) as u64);
                     let result = rec.write_to_bytes().unwrap();
                     self.store.save_today_bloom(result).unwrap();
@@ -115,9 +142,18 @@ impl Bloomgc {
         }
     }
 
+    pub fn schedule(&mut self) {
+        
+    }
+
     fn append_today_bloom(&mut self) {
         let totalp = config::total_put.load(Ordering::SeqCst) as u64;
-        let bitmap = self.bloomfilter.bitmap();
+        let mut guard = self.bloomfilter.lock();
+        let copy_bloomfilter = guard.clone();
+        guard.clear();
+        drop(guard);
+        config::total_put.swap(0, Ordering::SeqCst);
+        let bitmap = copy_bloomfilter.bitmap();
         let dt = chrono::Local::now();
         let mut now: Timestamp = Timestamp::new();
         now.set_seconds(
@@ -133,13 +169,13 @@ impl Bloomgc {
         rec.set_totalPut(totalp);
         self.store.append_to_all_bloom(rec).unwrap();
         if totalp > 200000 {
+            let mut guard = self.bloomfilter.lock();
             self.all_bloomfilter.push(BloomEntry {
-                bloom: self.bloomfilter.clone(),
+                bloom: copy_bloomfilter,
                 total_put: totalp,
             });
         }
-        self.bloomfilter.clear();
-        config::total_put.swap(0, Ordering::SeqCst);
+
         info!("append today bloom")
     }
 

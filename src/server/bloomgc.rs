@@ -18,7 +18,7 @@ pub struct bloomgc_server {
 }
 
 impl bloomgc_server {
-    pub fn new(rx: Receiver<PathBuf>, p: PathBuf, days: usize) -> bloomgc_server {      
+    pub fn new(rx: Receiver<PathBuf>, p: PathBuf, days: usize) -> bloomgc_server {
         bloomgc_server {
             bloomgc_handle: None,
             path: p,
