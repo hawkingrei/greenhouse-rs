@@ -81,12 +81,12 @@ impl Bloomgc {
     }
 
     pub fn serve(&mut self) {
-        //let dt = chrono::Local::now();
-        //let ndt = chrono::Local
-        //    .ymd(dt.year(), dt.month(), dt.day() + 1)
-        //    .and_hms_milli(0, 0, 0, 0)
-        //    - dt;
-        let nt = tick(Duration::from_secs(60));
+        let dt = chrono::Local::now();
+        let ndt = chrono::Local
+            .ymd(dt.year(), dt.month(), dt.day() + 1)
+            .and_hms_milli(0, 0, 0, 0)
+            - dt;
+        let nt = tick(ndt.to_std().unwrap());
         let t = tick(Duration::from_secs(10));
         loop {
             select! {
@@ -108,8 +108,8 @@ impl Bloomgc {
                     self.append_today_bloom();
                     self.clear();
 
-                    //let ndt = chrono::Local.ymd(dt.year(), dt.month(), dt.day()+1).and_hms_milli(0, 0, 0, 0)-dt;
-                    //let nt = tick(ndt.to_std().unwrap());
+                    let ndt = chrono::Local.ymd(dt.year(), dt.month(), dt.day()+1).and_hms_milli(0, 0, 0, 0)-dt;
+                    let nt = tick(ndt.to_std().unwrap());
                 }
             }
         }
