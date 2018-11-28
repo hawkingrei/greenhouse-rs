@@ -12,6 +12,7 @@ extern crate signal;
 
 use clap::{App, Arg};
 use crossbeam_channel;
+use env_logger::{Builder, Env};
 
 use std::path::Path;
 use std::path::PathBuf;
@@ -71,7 +72,7 @@ fn main() {
     let metrics_dir = _dir.to_string().to_string();
     let gcpath = metrics_dir.clone();
 
-    env_logger::init();
+    Builder::from_env(Env::default().default_filter_or("info")).init();
     let (tx, rx) = crossbeam_channel::unbounded::<PathBuf>();
 
     let mut http_server = HttpServe::new("0.0.0.0".to_string(), _cache_port, _dir, tx);
