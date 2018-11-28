@@ -33,7 +33,7 @@ pub type MemTrackerPtr = Rc<MemTracker>;
 pub type WeakMemTrackerPtr = Weak<MemTracker>;
 
 /// Struct to track memory usage information.
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct MemTracker {
     // In the tuple, the first element is the current memory allocated (in bytes),
     // and the second element is the maximum memory allocated so far (in bytes).
