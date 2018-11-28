@@ -23,7 +23,7 @@ rocket = "0.4.0-rc.1"
 rocket_codegen = "0.4.0-rc.1"
 rand = "0.4"
 siphasher = "^0.2.2"
-log = { version = "0.4.6", features = ["release_max_level_debug"] }
+log = { version = "0.4.6", features = ["release_max_level_info"] }
 nix = "0.11.0"
 slog = "2.3"
 slog-async = "2.3"
