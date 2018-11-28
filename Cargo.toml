@@ -57,9 +57,6 @@ name = "greenhouse"
 [[bin]]
 name = "greenhouse-server"
 
-[[bin]]
-name = "greenhouse-rs"
-
 [[bench]]
 name = "benches"
 

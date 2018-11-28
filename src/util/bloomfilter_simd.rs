@@ -103,7 +103,7 @@ impl Bloomfilter {
             let mut simd_addr = _mm256_setzero_si256();
             ptr::copy_nonoverlapping(
                 addr,
-                std::mem::transmute::<*mut __m256i, *mut [i64; 4]>(&mut simd_addr),
+                &mut simd_addr as *mut std::arch::x86_64::__m256i as *mut [i64; 4],
                 1,
             );
             let mut bucket = _mm256_load_si256(&simd_addr);
@@ -119,7 +119,7 @@ impl Bloomfilter {
             let mut simd_addr = _mm256_setzero_si256();
             ptr::copy_nonoverlapping(
                 addr,
-                std::mem::transmute::<*mut __m256i, *mut [i64; 4]>(&mut simd_addr),
+                &mut simd_addr as *mut std::arch::x86_64::__m256i as *mut [i64; 4],
                 1,
             );
             let bucket = _mm256_load_si256(&simd_addr);

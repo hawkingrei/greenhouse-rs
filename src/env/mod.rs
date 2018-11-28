@@ -32,7 +32,7 @@ pub enum WALRecoveryMode {
     KSkipAnyCorruptedRecords = 0x03,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct EnvOptions {
     // If true, then use mmap to read data
     pub use_mmap_reads: bool,

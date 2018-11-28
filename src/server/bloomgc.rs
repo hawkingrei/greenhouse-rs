@@ -1,14 +1,10 @@
 use crossbeam_channel::Receiver;
 use log::info;
-use rocket::config::LoggingLevel;
-use rocket::config::{Config, Environment, Limits};
 use std::io;
 use std::path::PathBuf;
-use std::{thread, time};
+use std::thread;
 
 use crate::diskgc::bloom::Bloomgc;
-use crate::diskgc::lazy;
-use crate::router;
 
 pub struct BloomgcServer {
     bloomgc_handle: Option<thread::JoinHandle<()>>,
