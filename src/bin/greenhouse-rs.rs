@@ -7,32 +7,20 @@ extern crate greenhouse;
 extern crate nix;
 #[cfg(unix)]
 extern crate signal;
-#[macro_use]
 extern crate rocket;
 extern crate env_logger;
 
 use clap::{App, Arg};
 use crossbeam_channel;
-use futures::future::lazy;
-use futures::Future;
-use log::info;
-use rocket::config::LoggingLevel;
-use rocket::config::{Config, Environment, Limits};
 
 use std::path::Path;
 use std::path::PathBuf;
-use std::{thread, time};
-use tokio::runtime::Runtime;
+use std::time;
 
-use greenhouse::config::CachePath;
-use greenhouse::disk::get_disk_usage_prom;
-use greenhouse::diskgc::bloom::Bloomgc;
-use greenhouse::diskgc::lazy;
-use greenhouse::router;
-use greenhouse::server::bloomgc::bloomgc_server;
-use greenhouse::server::disk_usage_server::disk_usage_server;
+use greenhouse::server::bloomgc::BloomgcServer;
+use greenhouse::server::disk_usage_server::DiskUsageServer;
 use greenhouse::server::http::HttpServe;
-use greenhouse::server::lazygc::lazygc_server;
+use greenhouse::server::lazygc::LazygcServer;
 use greenhouse::server::metric::MetricServer;
 
 mod util;
@@ -91,9 +79,9 @@ fn main() {
 
     let pathbuf = Path::new(&gcpath).to_path_buf();
     let ten_millis = time::Duration::from_secs(2);
-    let mut disk_usage = disk_usage_server::new(ten_millis, pathbuf.clone());
-    let mut lazygc = lazygc_server::new(pathbuf.clone(), 5.0, 20.0);
-    let mut bloomgc = bloomgc_server::new(rx, pathbuf.clone(), 3);
+    let mut disk_usage = DiskUsageServer::new(ten_millis, pathbuf.clone());
+    let mut lazygc = LazygcServer::new(pathbuf.clone(), 5.0, 20.0);
+    let mut bloomgc = BloomgcServer::new(rx, pathbuf.clone(), 3);
 
     metrics_server.start().unwrap();
     disk_usage.start().unwrap();

@@ -5,7 +5,6 @@ use std::io;
 use std::thread;
 
 use crate::router;
-#[macro_use]
 use crate::util::macros;
 
 pub struct MetricServer {
@@ -22,7 +21,7 @@ impl MetricServer {
     }
 
     pub fn start(&mut self) -> Result<(), io::Error> {
-        let builder = thread::Builder::new().name(thd_name!(format!("{}", "metric-service")));
+        let builder = thread::Builder::new().name(thd_name!("metric-service".to_string()));
         let config = Config::build(Environment::Staging)
             .address("0.0.0.0")
             .port(self.metrics_port)

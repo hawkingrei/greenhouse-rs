@@ -10,16 +10,16 @@ use crate::diskgc::bloom::Bloomgc;
 use crate::diskgc::lazy;
 use crate::router;
 
-pub struct bloomgc_server {
+pub struct BloomgcServer {
     bloomgc_handle: Option<thread::JoinHandle<()>>,
     rx: Receiver<PathBuf>,
     path: PathBuf,
     days: usize,
 }
 
-impl bloomgc_server {
-    pub fn new(rx: Receiver<PathBuf>, p: PathBuf, days: usize) -> bloomgc_server {
-        bloomgc_server {
+impl BloomgcServer {
+    pub fn new(rx: Receiver<PathBuf>, p: PathBuf, days: usize) -> BloomgcServer {
+        BloomgcServer {
             bloomgc_handle: None,
             path: p,
             rx: rx,
@@ -29,7 +29,7 @@ impl bloomgc_server {
 
     pub fn start(&mut self) -> Result<(), io::Error> {
         info!("new bgc  builder");
-        let builder = thread::Builder::new().name(thd_name!(format!("{}", "bloomgc-service")));
+        let builder = thread::Builder::new().name(thd_name!("bloomgc-service".to_string()));
         let mut bgc = Bloomgc::new(self.rx.clone(), self.path.clone(), self.days);
         let h = builder.spawn(move || {
             info!("bgc start");

@@ -1,6 +1,5 @@
 #![crate_type = "lib"]
 #![feature(plugin)]
-#![feature(int_to_from_bytes)]
 #![feature(type_ascription)]
 #![feature(custom_attribute)]
 #![feature(proc_macro_hygiene, decl_macro)]
@@ -32,7 +31,7 @@ extern crate chrono;
 extern crate log;
 extern crate protobuf;
 extern crate serde;
-#[cfg_attr(not(test), macro_use(slog_o, o, slog_info, slog_kv))]
+#[cfg_attr(not(test), macro_use(slog_info))]
 #[cfg_attr(test, macro_use(slog_info))]
 extern crate slog;
 extern crate slog_async;

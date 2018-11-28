@@ -311,7 +311,6 @@ pub struct PosixAppendFile {
     fd_: i32,
     file_: FILE,
     curr: usize,
-    next: usize,
 }
 
 impl fmt::Debug for PosixAppendFile {
@@ -327,7 +326,6 @@ impl Default for PosixAppendFile {
             fd_: 0,
             file_: FILE(ptr::null_mut()),
             curr: 0,
-            next: 0,
         }
     }
 }
@@ -425,7 +423,6 @@ impl PosixAppendFile {
             fd_: fd,
             file_: FILE(file),
             curr: 0,
-            next: 0,
         })
     }
 

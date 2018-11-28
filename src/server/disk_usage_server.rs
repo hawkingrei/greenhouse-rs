@@ -6,20 +6,17 @@ use std::path::PathBuf;
 use std::thread;
 use std::time::Duration;
 
-use crate::router;
-#[macro_use]
-use crate::util::macros;
 use crate::disk::get_disk_usage_prom;
 
-pub struct disk_usage_server {
+pub struct DiskUsageServer {
     metric_handle: Option<thread::JoinHandle<()>>,
     duration: Duration,
     path: PathBuf,
 }
 
-impl disk_usage_server {
-    pub fn new(d: Duration, p: PathBuf) -> disk_usage_server {
-        disk_usage_server {
+impl DiskUsageServer {
+    pub fn new(d: Duration, p: PathBuf) -> DiskUsageServer {
+        DiskUsageServer {
             metric_handle: None,
             duration: d,
             path: p,
@@ -27,8 +24,8 @@ impl disk_usage_server {
     }
 
     pub fn start(&mut self) -> Result<(), io::Error> {
-        let builder = thread::Builder::new().name(thd_name!(format!("{}", "disk-usage-service")));
-        let d = self.duration.clone();
+        let builder = thread::Builder::new().name(thd_name!("disk-usage-service".to_string()));
+        let d = self.duration;
         let p = self.path.clone();
         let h = builder.spawn(move || loop {
             info!("disk metric start");

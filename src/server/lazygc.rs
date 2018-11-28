@@ -1,27 +1,24 @@
 use log::info;
-use rocket::config::LoggingLevel;
-use rocket::config::{Config, Environment, Limits};
 use std::io;
 use std::path::PathBuf;
 use std::{thread, time};
 
 use crate::diskgc::lazy;
-use crate::router;
 
-pub struct lazygc_server {
+pub struct LazygcServer {
     lazygc_handle: Option<thread::JoinHandle<()>>,
     path: PathBuf,
     min_percent_block_free: f64,
     stop_percent_block: f64,
 }
 
-impl lazygc_server {
+impl LazygcServer {
     pub fn new(
         path: PathBuf,
         min_percent_block_free: f64,
         stop_percent_block: f64,
-    ) -> lazygc_server {
-        lazygc_server {
+    ) -> LazygcServer {
+        LazygcServer {
             lazygc_handle: None,
             path: path,
             min_percent_block_free: min_percent_block_free,
@@ -30,7 +27,7 @@ impl lazygc_server {
     }
 
     pub fn start(&mut self) -> Result<(), io::Error> {
-        let builder = thread::Builder::new().name(thd_name!(format!("{}", "lazygc-service")));
+        let builder = thread::Builder::new().name(thd_name!("lazygc-service".to_string()));
         let gc = lazy::Lazygc::new(
             self.path.as_path(),
             self.min_percent_block_free,

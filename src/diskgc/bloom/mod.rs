@@ -63,7 +63,7 @@ impl Bloomgc {
         let mut store = new_gc_store(gc_file_path);
         let mut all_bloom: Vec<BloomEntry> = Vec::new();
         let (all, today) = store.get_all();
-        let bloomfilter :Arc<spin::Mutex<Bloom<PathBuf>>> = match today {
+        let bloomfilter: Arc<spin::Mutex<Bloom<PathBuf>>> = match today {
             Ok(r) => Arc::new(spin::Mutex::new(Bloom::from_existing(
                 &r.as_slice(),
                 NUMBER_OF_BITS,
