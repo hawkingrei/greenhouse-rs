@@ -1,11 +1,10 @@
 use log::info;
 use rocket::config::LoggingLevel;
-use rocket::config::{Config, Environment, Limits};
+use rocket::config::{Config, Environment};
 use std::io;
 use std::thread;
 
 use crate::router;
-use crate::util::macros;
 
 pub struct MetricServer {
     metric_handle: Option<thread::JoinHandle<()>>,

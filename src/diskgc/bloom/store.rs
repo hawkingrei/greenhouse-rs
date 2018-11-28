@@ -54,7 +54,7 @@ impl GcStore {
             result.push(r);
         }
         info!("get_all_bloom end");
-        return (result, self._today_fd_.read());
+        (result, self._today_fd_.read())
     }
 
     pub fn append_to_all_bloom(&mut self, r: Record) -> io::Result<()> {
@@ -103,7 +103,7 @@ fn test_bloomgc() {
         gc.append_to_all_bloom(rec3);
     }
 
-    let result = gc.get_all_bloom();
+    let (result, _) = gc.get_all();
     let res1 = result.get(0).unwrap();
     assert_eq!(res1.get_totalPut(), 1234);
     let res2 = result.get(1).unwrap();

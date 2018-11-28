@@ -1,6 +1,4 @@
 use log::info;
-use rocket::config::LoggingLevel;
-use rocket::config::{Config, Environment, Limits};
 use std::io;
 use std::path::PathBuf;
 use std::thread;

@@ -28,7 +28,7 @@ pub fn get(file: PathBuf, path: State<CachePath>, rx: State<Sender<PathBuf>>) ->
             } else {
                 metrics::CASMisses.inc();
             }
-            return None;
+            None
         }
         Some(result) => {
             if filename.contains("ac") {
@@ -37,7 +37,7 @@ pub fn get(file: PathBuf, path: State<CachePath>, rx: State<Sender<PathBuf>>) ->
                 metrics::CASHits.inc();
             }
             rx.send(file).ok();
-            return Some(result);
+            Some(result)
         }
     }
 }
@@ -78,7 +78,7 @@ pub fn upload(
     fs::rename(wfile.path(), together.clone()).unwrap();
     rx.send(file).ok();
     config::total_put.fetch_add(1, Ordering::SeqCst);
-    return Ok(together.to_str().unwrap().to_string());
+    Ok(together.to_str().unwrap().to_string())
 }
 
 #[head("/<file..>")]
@@ -91,5 +91,5 @@ pub fn head(file: PathBuf, path: State<CachePath>, rx: State<Sender<PathBuf>>) -
         rx.send(file).ok();
         return Some(());
     }
-    return None;
+    None
 }

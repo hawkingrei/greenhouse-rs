@@ -11,15 +11,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::fmt;
-use std::io::{self, Write};
-use std::panic::{RefUnwindSafe, UnwindSafe};
-use std::path::Path;
 
 use chrono;
 use log;
 use log::Level;
-use log::SetLoggerError;
 
 pub fn get_level_by_string(lv: &str) -> Option<Level> {
     match &*lv.to_owned().to_lowercase() {

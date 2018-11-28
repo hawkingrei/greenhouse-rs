@@ -2,11 +2,10 @@ use crate::env;
 use crate::env::EnvOptions;
 use crate::env::OverwriteFile;
 use crate::env::K_DEFAULT_PAGE_SIZE;
-use crate::env::{SequentialFile, WritableFile};
 
 use libc;
 use libc::c_int;
-use log::{error, warn};
+use log::warn;
 use std::ffi::CString;
 use std::fmt;
 use std::io;
@@ -190,7 +189,7 @@ impl PosixOverwriteFile {
                 ),
             ));
         }
-        set_fd_cloexec(fd, options.clone());
+        set_fd_cloexec(fd, options);
         if options.use_direct_reads && !options.use_mmap_reads {
             #[cfg(target_os = "macos")]
             unsafe {
@@ -388,7 +387,7 @@ impl PosixAppendFile {
                 ),
             ));
         }
-        set_fd_cloexec(fd, options.clone());
+        set_fd_cloexec(fd, options);
         if options.use_direct_reads && !options.use_mmap_reads {
             #[cfg(target_os = "macos")]
             unsafe {

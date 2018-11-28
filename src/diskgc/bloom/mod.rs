@@ -26,10 +26,10 @@ use crate::diskgc::lazy::get_entries;
 use crate::util::bloomfilter::Bloom;
 use crate::util::metrics;
 
-const ITEMS_COUNT: usize = 500000;
+const ITEMS_COUNT: usize = 500_000;
 const FP_P: f64 = 0.1;
-const NUMBER_OF_BITS: u64 = 2396272;
-const BITMAP_SIZE: usize = 299534;
+const NUMBER_OF_BITS: u64 = 2_396_272;
+const BITMAP_SIZE: usize = 299_534;
 const NUMBER_OF_HASH_FUNCTIONS: u32 = 4;
 
 struct BloomEntry {

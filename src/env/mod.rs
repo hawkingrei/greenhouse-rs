@@ -1,7 +1,6 @@
 pub mod io_posix;
 
 use std::io;
-use std::path::PathBuf;
 
 use crate::env;
 use crate::util::status::State;
