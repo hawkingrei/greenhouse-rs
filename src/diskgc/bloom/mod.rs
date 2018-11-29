@@ -142,7 +142,6 @@ impl Bloomgc {
                 total_put: totalp,
             });
         }
-
         info!("append today bloom")
     }
 
@@ -152,33 +151,22 @@ impl Bloomgc {
         for entry in entries.into_iter() {
             match fs::metadata(entry.path.as_path()) {
                 Ok(meta) => {
-                    info!(
-                        "file ctime {:?} now {:?}",
-                        meta.ctime(),
-                        SystemTime::now()
-                            .duration_since(SystemTime::UNIX_EPOCH)
-                            .unwrap()
-                            .as_secs()
-                    );
                     if !((SystemTime::now()
                         .duration_since(SystemTime::UNIX_EPOCH)
                         .unwrap()
                         .as_secs()
                         - meta.ctime() as u64) as f64
                         / 3600.0
-                        > 10.0)
+                        > 24.0)
                     {
-                        info!("do not to rm");
                         continue;
                     }
                     if self.is_clear(&entry.path) {
-                        info!("skip to rm");
                         continue;
                     }
                     match fs::remove_file(entry.path.as_path()) {
-                        Ok(_) => info!("rm ok"),
+                        Ok(_) => {}
                         Err(_) => {
-                            info!("fail to rm");
                             continue;
                         }
                     }
@@ -201,7 +189,6 @@ impl Bloomgc {
 
     pub fn serve(&mut self) {
         let t = tick(Duration::from_secs(5));
-        let nt = tick(Duration::from_secs(10));
         loop {
             select! {
                 recv(self.receiver) -> path => {
@@ -224,9 +211,8 @@ impl Bloomgc {
                     self.store.save_today_bloom(result).unwrap();
                     info!("{}","save today bloom");
                 },
-                //default(Duration::from_secs(1)) => {
-                recv(nt) -> _ => {
-                    //if chrono::Local::now() > self.get_next_time() {
+                default(Duration::from_secs(3)) => {
+                    if chrono::Local::now() > self.get_next_time() {
                         self.append_today_bloom();
                         self.clear();
 
@@ -236,8 +222,8 @@ impl Bloomgc {
                                 .ymd(dt.year(), dt.month(), dt.day() + 1)
                                 .and_hms_milli(0, 0, 0, 0),
                         );
-                    //}
-                },
+                    }
+                }
             }
         }
     }
@@ -250,13 +236,13 @@ impl Bloomgc {
         if self.all_bloomfilter.len() < self.days {
             return false;
         }
-
+        let mut is_existed = false;
         for element in self.all_bloomfilter.iter().rev().take(self.days) {
-            if !element.bloom.check(&p) {
-                return true;
+            if !is_existed && element.bloom.check(&p) {
+                is_existed = true;
             }
         }
-        return false;
+        return !is_existed;
     }
 }
 
