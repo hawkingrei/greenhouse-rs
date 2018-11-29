@@ -166,7 +166,7 @@ impl Bloomgc {
                         .as_secs()
                         - meta.ctime() as u64) as f64
                         / 3600.0
-                        > 2.0 * 24.0
+                        > 10.0
                     {
                         info!("do not to rm");
                         continue;
