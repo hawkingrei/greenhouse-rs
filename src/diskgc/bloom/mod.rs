@@ -157,7 +157,7 @@ impl Bloomgc {
                         .as_secs()
                         - meta.ctime() as u64) as f64
                         / 3600.0
-                        > 24.0)
+                        > self.days * 24.0)
                     {
                         continue;
                     }
@@ -229,10 +229,6 @@ impl Bloomgc {
     }
 
     fn is_clear(&self, p: &PathBuf) -> bool {
-        let ntime = SystemTime::now()
-            .duration_since(SystemTime::UNIX_EPOCH)
-            .unwrap()
-            .as_secs();
         if self.all_bloomfilter.len() < self.days {
             return false;
         }
