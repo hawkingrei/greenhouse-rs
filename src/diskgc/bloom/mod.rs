@@ -171,7 +171,7 @@ impl Bloomgc {
                         info!("do not to rm");
                         continue;
                     }
-                    if !self.is_clear(&entry.path) {
+                    if self.is_clear(&entry.path) {
                         info!("skip to rm");
                         continue;
                     }
