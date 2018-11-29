@@ -157,7 +157,7 @@ impl Bloomgc {
                         .as_secs()
                         - meta.ctime() as u64) as f64
                         / 3600.0
-                        > self.days * 24.0)
+                        > self.days as f64 * 24.0)
                     {
                         continue;
                     }
