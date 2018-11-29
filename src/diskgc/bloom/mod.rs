@@ -160,13 +160,13 @@ impl Bloomgc {
                             .unwrap()
                             .as_secs()
                     );
-                    if !(SystemTime::now()
+                    if !((SystemTime::now()
                         .duration_since(SystemTime::UNIX_EPOCH)
                         .unwrap()
                         .as_secs()
                         - meta.ctime() as u64) as f64
                         / 3600.0
-                        > 10.0
+                        > 10.0)
                     {
                         info!("do not to rm");
                         continue;
