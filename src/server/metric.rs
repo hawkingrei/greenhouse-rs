@@ -25,7 +25,6 @@ impl MetricServer {
             .address("0.0.0.0")
             .port(self.metrics_port)
             .log_level(LoggingLevel::Off)
-            .keep_alive(5)
             .finalize()
             .unwrap();
         let h = builder.spawn(move || {

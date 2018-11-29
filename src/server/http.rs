@@ -33,7 +33,6 @@ impl HttpServe {
         let config = Config::build(Environment::Staging)
             .address(self.http_addr.clone())
             .port(self.http_port)
-            .keep_alive(180)
             .limits(Limits::new().limit("forms", 1024 * 1024 * 512))
             .log_level(LoggingLevel::Off)
             .finalize()
