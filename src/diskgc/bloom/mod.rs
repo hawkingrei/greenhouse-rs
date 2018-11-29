@@ -253,10 +253,10 @@ impl Bloomgc {
 
         for element in self.all_bloomfilter.iter().rev().take(self.days) {
             if !element.bloom.check(&p) {
-                return false;
+                return true;
             }
         }
-        return true;
+        return false;
     }
 }
 
