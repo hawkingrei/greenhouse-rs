@@ -1,5 +1,5 @@
 image:
-	cargo build --release
+	cargo build --release 
 	docker build -t greenhouse-rs .
 
 test_data:
@@ -10,4 +10,5 @@ test: test_data
 
 clean:
 	rm -rf test_data
+	cargo clean
 	
