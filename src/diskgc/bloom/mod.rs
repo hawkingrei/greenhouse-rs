@@ -189,7 +189,7 @@ impl Bloomgc {
     }
 
     pub fn serve(&mut self) {
-        let t = tick(Duration::from_secs(5));
+        let t = tick(Duration::from_secs(60));
         loop {
             select! {
                 recv(self.receiver) -> path => {
@@ -212,7 +212,7 @@ impl Bloomgc {
                     self.store.save_today_bloom(result).unwrap();
                     info!("{}","save today bloom");
                 },
-                default(Duration::from_secs(3)) => {
+                default(Duration::from_secs(5)) => {
                     if chrono::Local::now() > self.get_next_time() {
                         self.append_today_bloom();
                         self.clear();
