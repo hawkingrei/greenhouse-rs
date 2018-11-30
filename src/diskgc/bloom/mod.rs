@@ -213,7 +213,7 @@ impl Bloomgc {
                     self.store.save_today_bloom(result).unwrap();
                     info!("{}","save today bloom");
                 },
-                 recv(nt) -> _ => {
+                recv(nt) -> _ => {
                     if chrono::Local::now() > self.get_next_time() {
                         self.append_today_bloom();
                         self.clear();
