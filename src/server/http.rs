@@ -29,7 +29,7 @@ impl HttpServe {
     }
 
     pub fn start(&mut self) -> Result<(), io::Error> {
-        let builder = thread::Builder::new().name(thd_name!("metric-service".to_string()));
+        let builder = thread::Builder::new().name(thd_name!("public-http-service".to_string()));
         let config = Config::build(Environment::Staging)
             .address(self.http_addr.clone())
             .port(self.http_port)
