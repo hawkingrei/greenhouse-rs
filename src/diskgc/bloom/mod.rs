@@ -93,8 +93,9 @@ impl Bloomgc {
         }
         let dt = chrono::Local::now();
         let ndt = chrono::Local
-            .ymd(dt.year(), dt.month(), dt.day() + 1)
-            .and_hms_milli(0, 0, 0, 0);
+            .ymd(dt.year(), dt.month(), dt.day())
+            .and_hms_milli(0, 0, 0, 0)
+            + chrono::Duration::days(1);
         let bloomfilter: Arc<spin::Mutex<Bloom<PathBuf>>> =
             Arc::new(spin::Mutex::new(Bloom::from_existing(
                 &[0; BITMAP_SIZE],
