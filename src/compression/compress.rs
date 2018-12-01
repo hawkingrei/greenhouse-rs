@@ -193,9 +193,8 @@ impl Codec for ZSTDCodec {
     }
 
     fn compress(&mut self, input_buf: &[u8], output_buf: &mut Vec<u8>) -> Result<()> {
-        let mut encoder = zstd::Encoder::new(output_buf, ZSTD_COMPRESSION_LEVEL)?;
-        encoder.write_all(&input_buf[..])?;
-        match encoder.finish() {
+        let mut encoder = zstd::stream::encode_all(output_buf, ZSTD_COMPRESSION_LEVEL)?;
+        match io::copy(&mut encoder.as_slice(), &mut output_buf) {
             Ok(_) => Ok(()),
             Err(e) => Err(e.into()),
         }
