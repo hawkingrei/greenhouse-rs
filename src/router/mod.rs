@@ -76,25 +76,6 @@ pub fn upload(
             return Err(Error::new(ErrorKind::Other, "compress init error"));
         }
     };
-    /*
-    let mut encoder = match zstd::stream::Encoder::new(wfile.as_file_mut(), 5) {
-        Ok(en) => en,
-        Err(_) => {
-            wfile.close().ok();
-            return Err(Error::new(ErrorKind::Other, "Encoder init error"));
-        }
-    };
-    match io::copy(&mut paste.open(), &mut encoder) {
-        Ok(_) => {
-            //empty
-        }
-        Err(_) => {
-            wfile.close().ok();
-            return Err(Error::new(ErrorKind::Other, "compress init error"));
-        }
-    };
-    encoder.finish().unwrap();
-    */
     fs::rename(wfile.path(), together.clone()).unwrap();
     rx.send(file).ok();
     config::total_put.fetch_add(1, Ordering::SeqCst);
