@@ -69,7 +69,6 @@ impl Fairing for SlogFairing {
             if let Some(msgpack) = config.limits.get("msgpack") {
                 slog_info!(&self.0, "config"; "key" => "msgpack limit", "value" => ?msgpack);
             }
-            slog_info!(&self.0, "config"; "key" => "config_path", "value" => ?config.config_path);
             for (key, val) in &config.extras {
                 slog_info!(&self.0, "config"; "key" => &key, "value" => ?val);
             }
