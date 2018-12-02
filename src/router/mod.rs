@@ -14,6 +14,7 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::sync::atomic::Ordering;
 use tempfile::NamedTempFile;
+use zstd::stream::encode_all;
 
 #[get("/<file..>")]
 pub fn get(file: PathBuf, path: State<CachePath>, rx: State<Sender<PathBuf>>) -> Option<CacheFile> {
@@ -58,14 +59,15 @@ pub fn upload(
         fs::create_dir_all(together.parent().unwrap())?
     }
     let mut wfile = NamedTempFile::new_in(together.parent().unwrap()).unwrap();
-    let mut encoder = match zstd::stream::Encoder::new(wfile.as_file_mut(), 5) {
+    
+    let result = match zstd::stream::encode_all(paste.open(),5) {
         Ok(en) => en,
         Err(_) => {
             wfile.close().ok();
             return Err(Error::new(ErrorKind::Other, "Encoder init error"));
         }
     };
-    match io::copy(&mut paste.open(), &mut encoder) {
+   match io::copy(&mut result.as_slice(), &mut wfile){
         Ok(_) => {
             //empty
         }
@@ -74,7 +76,6 @@ pub fn upload(
             return Err(Error::new(ErrorKind::Other, "compress init error"));
         }
     };
-    encoder.finish().unwrap();
     fs::rename(wfile.path(), together.clone()).unwrap();
     rx.send(file).ok();
     config::total_put.fetch_add(1, Ordering::SeqCst);
