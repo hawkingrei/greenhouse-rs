@@ -59,15 +59,15 @@ pub fn upload(
         fs::create_dir_all(together.parent().unwrap())?
     }
     let mut wfile = NamedTempFile::new_in(together.parent().unwrap()).unwrap();
-    
-    let result = match zstd::stream::encode_all(paste.open(),5) {
+
+    let result = match zstd::stream::encode_all(paste.open(), 5) {
         Ok(en) => en,
         Err(_) => {
             wfile.close().ok();
             return Err(Error::new(ErrorKind::Other, "Encoder init error"));
         }
     };
-   match io::copy(&mut result.as_slice(), &mut wfile){
+    match io::copy(&mut result.as_slice(), &mut wfile) {
         Ok(_) => {
             //empty
         }

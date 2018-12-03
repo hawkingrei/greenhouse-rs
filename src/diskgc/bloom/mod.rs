@@ -32,6 +32,16 @@ const NUMBER_OF_BITS: u64 = 2_396_272;
 const BITMAP_SIZE: usize = 299_534;
 const NUMBER_OF_HASH_FUNCTIONS: u32 = 4;
 
+lazy_static! {
+    pub static ref global_bloomfilter: Arc<spin::Mutex<Bloom<PathBuf>>> =
+        Arc::new(spin::Mutex::new(Bloom::from_existing(
+            &[0; BITMAP_SIZE],
+            NUMBER_OF_BITS,
+            NUMBER_OF_HASH_FUNCTIONS,
+            [(2749812374, 12341234), (574893759834, 1298374918234)],
+        )));
+}
+
 struct BloomEntry {
     bloom: Bloom<PathBuf>,
     total_put: u64,
