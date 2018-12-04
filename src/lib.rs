@@ -57,3 +57,4 @@ pub mod diskgc;
 pub mod env;
 pub mod router;
 pub mod server;
+pub mod storage;
