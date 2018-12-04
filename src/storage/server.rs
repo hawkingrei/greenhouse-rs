@@ -1,4 +1,5 @@
-pub struct storage_server {
 
+pub struct storage_server {
+    
 }
 
