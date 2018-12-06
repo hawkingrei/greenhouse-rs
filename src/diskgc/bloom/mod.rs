@@ -218,10 +218,10 @@ impl Bloomgc {
                         self.append_today_bloom();
                         self.clear();
 
-                        let dt = chrono::Local::now();
+                        let dt = chrono::Local::now() + chrono::Duration::days(1);
                         self.set_next_time(
                             chrono::Local
-                                .ymd(dt.year(), dt.month(), dt.day() + 1)
+                                .ymd(dt.year(), dt.month(), dt.day())
                                 .and_hms_milli(0, 0, 0, 0),
                         );
                     }
