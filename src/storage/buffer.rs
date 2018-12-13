@@ -9,7 +9,7 @@ pub struct BufferEntry{
 }
 
 #[derive(Debug)]
-pub struct Buffer(Worker<BufferEntry>,Stealer<BufferEntry>);
+pub struct Buffer(pub Worker<BufferEntry>,pub Stealer<BufferEntry>);
 
 impl Buffer{
     pub fn new() -> Buffer {
