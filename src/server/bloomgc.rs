@@ -1,4 +1,4 @@
-use crossbeam_channel::Receiver;
+use crossbeam::channel::Receiver;
 use log::info;
 use std::io;
 use std::path::PathBuf;

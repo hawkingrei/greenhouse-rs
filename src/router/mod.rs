@@ -4,7 +4,7 @@ use crate::config;
 use crate::config::CachePath;
 use crate::disk::CacheFile;
 use crate::util::metrics;
-use crossbeam_channel::Sender;
+use crossbeam::channel::Sender;
 use rocket::Data;
 use rocket::State;
 use std::fs;
