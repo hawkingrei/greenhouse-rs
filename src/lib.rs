@@ -9,9 +9,8 @@
 #![recursion_limit = "128"]
 #![feature(uniform_paths)]
 
-extern crate crossbeam;
 #[macro_use]
-extern crate crossbeam_channel;
+extern crate crossbeam;
 extern crate core_affinity;
 extern crate tokio_timer;
 #[macro_use]

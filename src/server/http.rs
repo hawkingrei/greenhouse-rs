@@ -1,4 +1,4 @@
-use crossbeam_channel::Sender;
+use crossbeam::channel::Sender;
 use log::info;
 use rocket::config::LoggingLevel;
 use rocket::config::{Config, Environment, Limits};

@@ -15,7 +15,7 @@ use std::sync::mpsc::channel;
 use std::thread;
 use test::Bencher;
 
-use crossbeam_channel;
+use crossbeam::channel;
 use greenhouse::util::mpsc;
 use mio::{EventLoop, Handler, Sender};
 
@@ -150,7 +150,7 @@ fn bench_util_loose(b: &mut Bencher) {
 
 #[bench]
 fn bench_crossbeam_channel(b: &mut Bencher) {
-    let (tx, rx) = crossbeam_channel::unbounded();
+    let (tx, rx) = channel::unbounded();
 
     let t = thread::spawn(move || {
         let mut n2: usize = 0;
