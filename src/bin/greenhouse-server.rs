@@ -82,7 +82,7 @@ fn main() {
     let ten_millis = time::Duration::from_secs(2);
     let mut disk_usage = DiskUsageServer::new(ten_millis, pathbuf.clone());
     let mut lazygc = LazygcServer::new(pathbuf.clone(), 5.0, 20.0);
-    let mut bloomgc = BloomgcServer::new(rx, pathbuf.clone(), 3);
+    let mut bloomgc = BloomgcServer::new(rx, pathbuf.clone(), 2);
 
     metrics_server.start().unwrap();
     disk_usage.start().unwrap();
