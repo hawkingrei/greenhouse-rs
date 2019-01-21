@@ -55,6 +55,12 @@ fn main() {
                 .takes_value(true)
                 .help("port to listen on for prometheus metrics scraping"),
         )
+        .arg(
+            Arg::with_name("eviction-days")
+                .long("eviction-days")
+                .takes_value(true)
+                .help("if a file is not read over eviction days. it will be deleted"),
+        )
         .get_matches();
     let _dir = matches.value_of("dir").unwrap_or("~/tmp/cache").to_owned();
     let _host = matches.value_of("host").unwrap_or("0.0.0.0").to_owned();;
@@ -69,6 +75,12 @@ fn main() {
         .unwrap_or("9090")
         .parse::<u16>()
         .unwrap();
+    let _eviction_days = matches
+        .value_of("eviction-days")
+        .unwrap_or("3")
+        .parse::<usize>()
+        .unwrap();
+
     let metrics_dir = _dir.to_string().to_string();
     let gcpath = metrics_dir.clone();
 
@@ -82,7 +94,7 @@ fn main() {
     let ten_millis = time::Duration::from_secs(2);
     let mut disk_usage = DiskUsageServer::new(ten_millis, pathbuf.clone());
     let mut lazygc = LazygcServer::new(pathbuf.clone(), 5.0, 20.0);
-    let mut bloomgc = BloomgcServer::new(rx, pathbuf.clone(), 2);
+    let mut bloomgc = BloomgcServer::new(rx, pathbuf.clone(), _eviction_days);
 
     metrics_server.start().unwrap();
     disk_usage.start().unwrap();
