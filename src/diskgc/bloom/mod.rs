@@ -162,7 +162,7 @@ impl Bloomgc {
                     {
                         continue;
                     }
-                    if self.is_clear(&entry.path) {
+                    if !self.is_clear(&entry.path) {
                         continue;
                     }
                     match fs::remove_file(entry.path.as_path()) {
