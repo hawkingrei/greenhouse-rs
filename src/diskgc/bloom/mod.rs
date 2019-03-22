@@ -152,7 +152,7 @@ impl Bloomgc {
         for entry in entries.into_iter() {
             match fs::metadata(entry.path.as_path()) {
                 Ok(meta) => {
-                    if !((SystemTime::now()
+                    if ((SystemTime::now()
                         .duration_since(SystemTime::UNIX_EPOCH)
                         .unwrap()
                         .as_secs()
