@@ -152,17 +152,17 @@ impl Bloomgc {
         for entry in entries.into_iter() {
             match fs::metadata(entry.path.as_path()) {
                 Ok(meta) => {
-                    if !((SystemTime::now()
+                    if ((SystemTime::now()
                         .duration_since(SystemTime::UNIX_EPOCH)
                         .unwrap()
                         .as_secs()
                         - meta.ctime() as u64) as f64
                         / 3600.0
-                        > self.days as f64 * 24.0)
+                        < self.days as f64 * 24.0)
                     {
                         continue;
                     }
-                    if self.is_clear(&entry.path) {
+                    if !self.is_clear(&entry.path) {
                         continue;
                     }
                     match fs::remove_file(entry.path.as_path()) {
