@@ -8,6 +8,7 @@ edition = "2018"
 actix-web = "2.0"
 backtrace = "0.3.15"
 chrono = "0.4.6"
+coarsetime = "0.1"
 crc32fast = "1.2"
 fail = "0.2.1"
 futures = "0.3"
@@ -32,6 +33,7 @@ slog-term = "2.4"
 slog_derive = "0.1"
 tempdir = "0.3"
 tempfile = "3.0"
+tikv_alloc = { path = "../tikv_alloc", default-features = false }
 time = "0.1"
 tokio = { version = "0.2", features = ["full"] }
 utime = "0.2"
@@ -40,13 +42,9 @@ utime = "0.2"
 panic_hook = { path = "../panic_hook" }
 
 [dependencies.prometheus]
-version = "0.5.0"
-default-features = false
+git = "https://github.com/pingcap/rust-prometheus.git"
+rev = "d919ccd35976b9b84b8d03c07138c1cc05a36087"
 features = ["nightly", "push", "process"]
-
-[dependencies.prometheus-static-metric]
-version = "0.2.0"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 procinfo = { git = "https://github.com/tikv/procinfo-rs" }
-criterion-papi = "0.1"

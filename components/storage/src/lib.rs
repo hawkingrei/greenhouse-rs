@@ -23,6 +23,7 @@ use threadpool::{Priority, ThreadPool};
 use tokio::{fs, fs::File, io, prelude::*};
 
 use crate::config::StorageConfig;
+pub use crate::lazygc::start_cleaner;
 pub use crate::lazygc::Lazygc;
 pub use crate::metrics::*;
 

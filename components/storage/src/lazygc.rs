@@ -40,8 +40,8 @@ impl PartialEq for EntryInfo {
     }
 }
 
-pub struct Lazygc<P: AsRef<Path>> {
-    path: P,
+pub struct Lazygc {
+    path: PathBuf,
     min_percent_block_free: f64,
     stop_percent_block: f64,
 
@@ -49,8 +49,8 @@ pub struct Lazygc<P: AsRef<Path>> {
     entry_total_size: u64,
 }
 
-impl<P: AsRef<Path>> Lazygc<P> {
-    pub fn new(path: P, min_percent_block_free: f64, stop_percent_block: f64) -> Lazygc<P> {
+impl Lazygc {
+    pub fn new(path: PathBuf, min_percent_block_free: f64, stop_percent_block: f64) -> Lazygc {
         Lazygc {
             path,
             min_percent_block_free,
@@ -101,13 +101,14 @@ impl<P: AsRef<Path>> Lazygc<P> {
             self.entry_map.remove(&key_copy);
         }
     }
+}
 
-    pub fn start_cleaner(&mut self) {
-        task::block_on(async move {
-            loop {
-                thread::sleep(time::Duration::from_millis(1024 * 60));
-                self.start().await;
-            }
-        });
-    }
+pub async fn start_cleaner(path: PathBuf, min_percent_block_free: f64, stop_percent_block: f64) {
+    task::spawn(async move {
+        let mut gc = Lazygc::new(path, min_percent_block_free, stop_percent_block);
+        loop {
+            thread::sleep(time::Duration::from_millis(1024 * 60));
+            gc.start().await;
+        }
+    });
 }
