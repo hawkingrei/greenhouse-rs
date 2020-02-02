@@ -4,6 +4,8 @@ use prometheus::core::{Collector, Desc};
 use prometheus::proto::MetricFamily;
 use prometheus::{IntGaugeVec, Opts, Result};
 
+use tikv_alloc;
+
 pub fn monitor_allocator_stats<S: Into<String>>(namespace: S) -> Result<()> {
     prometheus::register(Box::new(AllocStatsCollector::new(namespace)?))
 }
@@ -32,6 +34,11 @@ impl Collector for AllocStatsCollector {
     }
 
     fn collect(&self) -> Vec<MetricFamily> {
+        if let Ok(Some(stats)) = tikv_alloc::fetch_stats() {
+            for stat in stats {
+                self.metrics.with_label_values(&[stat.0]).set(stat.1 as i64);
+            }
+        }
         self.metrics.collect()
     }
 }

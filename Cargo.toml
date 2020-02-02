@@ -28,6 +28,7 @@ slog-term = "2.4"
 slog_derive = "0.1"
 storage = { path = "components/storage" }
 threadpool = { path = "components/threadpool" }
+tikv_alloc = { path = "components/tikv_alloc" }
 toml = "0.5"
 zstd = { version = "0.5.1", features = ["tokio"] }
 async-std = "1.4.0"
@@ -37,13 +38,9 @@ panic_hook = { path = "components/panic_hook" }
 crc = "1.8.1"
 
 [dependencies.prometheus]
-version = "0.5"
-default-features = false
+git = "https://github.com/pingcap/rust-prometheus.git"
+rev = "d919ccd35976b9b84b8d03c07138c1cc05a36087"
 features = ["nightly", "push", "process"]
-
-[dependencies.prometheus-static-metric]
-version = "0.2.0"
-default-features = false
 
 [lib]
 name = "greenhouse"
@@ -59,6 +56,7 @@ members = [
   "components/panic_hook",
   "components/moni_middleware",
   "components/threadpool",
+  "components/tikv_alloc"
 ]
 
 
