@@ -1,0 +1,29 @@
+addr = "0.0.0.0:8090"
+log-level = "info"
+backtrace-dir = ""
+http-worker = 1
+log-file = "greenhouse.log"
+
+
+[taskpool.thumb]
+concurrency = 16
+
+## Size of the thread pool for normal-priority operations.
+# normal-concurrency = 4
+
+## Size of the thread pool for low-priority operations.
+# low-concurrency = 4
+
+## Max running high-priority operations of each worker, reject if exceeded.
+max-tasks-per-worker = 500
+
+## Max running normal-priority operations of each worker, reject if exceeded.
+# max-tasks-per-worker-normal = 2000
+
+## Max running low-priority operations of each worker, reject if exceeded.
+# max-tasks-per-worker-low = 2000
+
+## Size of the stack for each thread in the thread pool.
+stack-size = "40MB"
+
+[metric]

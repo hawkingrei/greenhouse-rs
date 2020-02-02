@@ -1,0 +1,19 @@
+addr = "0.0.0.0:8090"
+log-level = "info"
+backtrace-dir = "./"
+http-worker = 4
+log-file = "./thumbnail.log"
+
+[storage.threadpool]
+high-concurrency = 2
+normal-concurrency = 2
+low-concurrency = 2
+max-tasks-per-worker-high = 500
+max-tasks-per-worker-normal = 300
+max-tasks-per-worker-low = 200
+stack-size = "1024MB"
+
+[storage]
+cache-dir = "/home/vagrant/example-io/cache"
+
+[metric]
