@@ -16,15 +16,18 @@ use crate::route::storage_handle::{read, write};
 pub async fn run(cfg: &Config) {
     info!("listen to {}", &cfg.addr);
     let sys = actix_rt::System::new("greenhouse");
-    let storage_config = cfg.storage.clone();
 
+    let storage_config = cfg.storage.clone();
     let pathbuf = Path::new(&storage_config.cache_dir.clone()).to_path_buf();
     let ten_millis = time::Duration::from_secs(2);
     let mut metric_backend = DiskMetric::new(ten_millis, pathbuf.clone());
+
+    metric_backend.start().unwrap();
     start_cleaner(pathbuf.clone(), 0.8, 0.6).await;
+
     cibo_util::metrics::monitor_threads("greenhouse")
         .unwrap_or_else(|e| crit!("failed to start monitor thread: {}", e));
-    metric_backend.start().unwrap();
+
     HttpServer::new(move || {
         App::new()
             .wrap(Moni::new())

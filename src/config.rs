@@ -4,7 +4,6 @@ use std::fs;
 use std::io::Read;
 use std::path::Path;
 
-use cibo_util;
 use cibo_util::config::ReadableDuration;
 use storage::config::StorageConfig;
 
