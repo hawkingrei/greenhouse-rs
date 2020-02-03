@@ -41,7 +41,7 @@ pub async fn run(cfg: &Config) {
     .unwrap_or_else(|_| panic!("Can not bind to {}", &cfg.addr))
     .run();
 
-    HttpServer::new(move || App::new().route("/metrics", web::get().to(metric)))
+    HttpServer::new(move || App::new().route("/prometheus", web::get().to(metric)))
         .workers(1)
         .bind(&cfg.metric.address.clone())
         .unwrap_or_else(|_| panic!("Can not bind to {}", &cfg.metric.address))
