@@ -75,7 +75,7 @@ pub fn dump() -> String {
 
 lazy_static! {
     pub static ref CRITICAL_ERROR: IntCounterVec = register_int_counter_vec!(
-        "tikv_critical_error_total",
+        "cibo_critical_error_total",
         "Counter of critical error.",
         &["type"]
     )

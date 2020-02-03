@@ -1,4 +1,3 @@
-use libc;
 use prometheus::*;
 
 use std::ffi::CString;

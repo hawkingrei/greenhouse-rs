@@ -200,7 +200,6 @@ mod inner {
 
 #[cfg(target_os = "linux")]
 mod inner {
-    use libc;
     use std::io;
     use time::Timespec;
 

@@ -1,12 +1,12 @@
 use std::cmp::Ordering;
 use std::collections::BTreeMap;
 use std::os::unix::fs::MetadataExt;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::thread;
 use std::time;
 
-use async_std::task;
 use tokio::fs;
+use tokio::runtime::Runtime;
 
 use walkdir::WalkDir;
 
@@ -61,7 +61,7 @@ impl Lazygc {
     }
 
     pub async fn start(&mut self) {
-        if DISK_USED.get() * 100.0 / DISK_TOTAL.get() > self.min_percent_block_free {
+        if DISK_USED.get() / DISK_TOTAL.get() > self.min_percent_block_free {
             self.get().await;
             for (key, _) in self.entry_map.iter() {
                 fs::remove_file(&key.path).await;
@@ -104,11 +104,12 @@ impl Lazygc {
 }
 
 pub async fn start_cleaner(path: PathBuf, min_percent_block_free: f64, stop_percent_block: f64) {
-    task::spawn(async move {
+    let rt = Runtime::new().unwrap();
+    rt.spawn(async move {
         let mut gc = Lazygc::new(path, min_percent_block_free, stop_percent_block);
         loop {
-            thread::sleep(time::Duration::from_millis(1024 * 60));
             gc.start().await;
+            thread::sleep(time::Duration::from_millis(1024 * 60));
         }
     });
 }

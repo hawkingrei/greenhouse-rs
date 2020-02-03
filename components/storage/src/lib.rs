@@ -107,6 +107,7 @@ impl Storage {
             let mut e = ZstdEncoder::new(Vec::new(), 7);
             e.write_all(&data).await?;
             e.flush().await?;
+            e.close().await?;
             let mut file = File::create(p).await?;
             file.write_all(&e.into_inner()).await?;
             timer.observe_duration();
