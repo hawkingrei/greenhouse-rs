@@ -18,6 +18,6 @@ slog-global = { version = "0.1", git = "https://github.com/breeswish/slog-global
 pin-project = "0.4"
 
 [dependencies.prometheus]
-version = "0.5.0"
-default-features = false
+git = "https://github.com/pingcap/rust-prometheus.git"
+rev = "d919ccd35976b9b84b8d03c07138c1cc05a36087"
 features = ["nightly", "push", "process"]
