@@ -20,10 +20,9 @@ pub struct Config {
     pub backtrace_dir: String,
     pub log_rotation_timespan: ReadableDuration,
     // Server listening address.
-    pub addr: String,
-    pub http_worker: usize,
     pub metric: MetricConfig,
     pub storage: StorageConfig,
+    pub http_service: HttpServer,
 }
 
 impl Default for Config {
@@ -34,10 +33,9 @@ impl Default for Config {
             backtrace_dir: "".to_owned(),
             path: "".to_owned(),
             log_rotation_timespan: ReadableDuration::hours(24),
-            http_worker: 2,
-            addr: DEFAULT_LISTENING_ADDR.to_owned(),
             metric: MetricConfig::default(),
             storage: StorageConfig::default(),
+            http_service: HttpServer::default(),
         }
     }
 }
@@ -101,6 +99,29 @@ impl Default for MetricConfig {
     fn default() -> MetricConfig {
         MetricConfig {
             address: "0.0.0.0:8091".to_owned(),
+        }
+    }
+}
+
+#[derive(Clone, Serialize, Deserialize, PartialEq, Debug)]
+#[serde(default)]
+#[serde(rename_all = "kebab-case")]
+pub struct HttpServer {
+    pub addr: String,
+    pub http_worker: usize,
+    pub keepalive: ReadableDuration,
+    pub client_timeout: ReadableDuration,
+    pub client_shutdown: ReadableDuration,
+}
+
+impl Default for HttpServer {
+    fn default() -> HttpServer {
+        HttpServer {
+            http_worker: 2,
+            addr: DEFAULT_LISTENING_ADDR.to_owned(),
+            keepalive: ReadableDuration::secs(10),
+            client_timeout: ReadableDuration::millis(5000),
+            client_shutdown: ReadableDuration::millis(5000),
         }
     }
 }
