@@ -183,13 +183,13 @@ impl<B> Drop for MoniLog<B> {
                     match info.status_code {
                         200 => ACTION_CACHE_HITS.inc(),
                         404 => ACTION_CACHE_MISSES.inc(),
-                        _ => {}
+                        _ => GREENHOUSE_HTTP_ERROR.inc(),
                     }
                 } else {
                     match info.status_code {
                         200 => CAS_HITS.inc(),
                         404 => CAS_MISSES.inc(),
-                        _ => {}
+                        _ => GREENHOUSE_HTTP_ERROR.inc(),
                     }
                 }
             }

@@ -15,6 +15,11 @@ lazy_static! {
         "greenhouse_business_timing_count"
     ))
     .unwrap();
+    pub static ref GREENHOUSE_HTTP_ERROR: Counter = register_counter!(opts!(
+        "greenhouse_http_error",
+        "Approximate number of http error since last server start"
+    ))
+    .unwrap();
     pub static ref ACTION_CACHE_HITS: Counter = register_counter!(opts!(
         "bazel_cache_cas_hits",
         "Approximate number of Action Cache hits since last server start"
