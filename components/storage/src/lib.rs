@@ -48,9 +48,9 @@ impl Storage {
     }
 
     fn priority_by_size(&self, size: u64) -> Priority {
-        if size <= 1024 * 1024 * 10 {
+        if size <= 1024 * 250 {
             Priority::HIGH
-        } else if size <= 1024 * 1024 * 500 {
+        } else if size <= 1024 * 1024 {
             Priority::NORMAL
         } else {
             Priority::LOW
