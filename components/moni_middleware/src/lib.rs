@@ -181,13 +181,19 @@ impl<B> Drop for MoniLog<B> {
             if info.method == Method::GET {
                 if info.url_path.contains("/ac/") {
                     match info.status_code {
-                        200 => ACTION_CACHE_HITS.inc(),
+                        200 => {
+                            ACTION_CACHE_HITS.inc();
+                            GREENHOUSE_SIZE_HISTOGRAM.observe(self.size as f64);
+                        }
                         404 => ACTION_CACHE_MISSES.inc(),
                         _ => GREENHOUSE_HTTP_ERROR.inc(),
                     }
                 } else {
                     match info.status_code {
-                        200 => CAS_HITS.inc(),
+                        200 => {
+                            CAS_HITS.inc();
+                            GREENHOUSE_SIZE_HISTOGRAM.observe(self.size as f64);
+                        }
                         404 => CAS_MISSES.inc(),
                         _ => GREENHOUSE_HTTP_ERROR.inc(),
                     }
