@@ -20,6 +20,12 @@ lazy_static! {
         "Approximate number of http error since last server start"
     ))
     .unwrap();
+    pub static ref GREENHOUSE_SIZE_HISTOGRAM: Histogram = register_histogram!(
+        "greenhouse_size_histogram",
+        "greenhouse_size_histogram",
+        exponential_buckets(1024.0, 2.0, 20).unwrap()
+    )
+    .unwrap();
     pub static ref ACTION_CACHE_HITS: Counter = register_counter!(opts!(
         "bazel_cache_cas_hits",
         "Approximate number of Action Cache hits since last server start"
