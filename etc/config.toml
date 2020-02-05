@@ -17,3 +17,9 @@ stack-size = "1024MB"
 cache-dir = "/home/vagrant/example-io/cache"
 
 [metric]
+address = "0.0.0.0:9090"
+
+[http-service]
+addr = "0.0.0.0:8080"
+http-worker = 10
+client-shutdown = "10s"

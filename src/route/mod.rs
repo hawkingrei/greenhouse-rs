@@ -1,10 +1,12 @@
 mod metric;
 mod storage_handle;
 
+use std::convert::TryInto;
 use std::path::Path;
 use std::sync::Arc;
 use std::time;
 
+use actix_http::KeepAlive;
 use actix_web::{http::header::ContentEncoding, middleware::Compress, web, App, HttpServer};
 use moni_middleware::Moni;
 use storage::{start_cleaner, DiskMetric, Storage};
@@ -14,7 +16,7 @@ use crate::route::metric::metric;
 use crate::route::storage_handle::{read, write};
 
 pub async fn run(cfg: &Config) {
-    info!("listen to {}", &cfg.addr);
+    info!("listen to {}", &cfg.http_service.addr);
     let sys = actix_rt::System::new("greenhouse");
 
     let storage_config = cfg.storage.clone();
@@ -39,9 +41,14 @@ pub async fn run(cfg: &Config) {
                     .route(web::put().to(write)),
             )
     })
-    .workers(cfg.http_worker)
-    .bind(&cfg.addr.clone())
-    .unwrap_or_else(|_| panic!("Can not bind to {}", &cfg.addr))
+    .workers(cfg.http_service.http_worker)
+    .client_timeout(cfg.http_service.client_timeout.as_millis())
+    .client_shutdown(cfg.http_service.client_shutdown.as_millis())
+    .keep_alive(KeepAlive::Timeout(
+        cfg.http_service.keepalive.as_secs().try_into().unwrap(),
+    ))
+    .bind(&cfg.http_service.addr.clone())
+    .unwrap_or_else(|_| panic!("Can not bind to {}", &cfg.http_service.addr))
     .run();
 
     HttpServer::new(move || App::new().route("/prometheus", web::get().to(metric)))
