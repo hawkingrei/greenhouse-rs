@@ -8,7 +8,6 @@ edition = "2018"
 
 [dependencies]
 async-compression = {version = "0.2.0", features = ["futures-write","gzip", "deflate", "brotli", "zstd"] }
-async-std = "1.4.0"
 futures = "0.3"
 libc = "0.2"
 lazy_static = "1.3"

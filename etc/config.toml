@@ -1,7 +1,5 @@
-addr = "0.0.0.0:8090"
 log-level = "info"
 backtrace-dir = "./"
-http-worker = 4
 log-file = "./thumbnail.log"
 
 [storage.threadpool]

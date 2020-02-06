@@ -10,7 +10,6 @@ edition = "2018"
 actix-http = "1"
 actix-rt = "1"
 actix-web = "2"
-async-std = "1.4.0"
 bytes = "0.4"
 chrono = "0.4"
 cibo_util = { path = "components/cibo_util" }
