@@ -9,11 +9,11 @@ mod util;
 
 use crate::util::setup::initial_logger;
 
+use async_std::task;
 use cibo_util;
 use clap::{App, Arg};
 use greenhouse::config::Config;
 use greenhouse::route;
-use tokio::runtime::Runtime;
 
 fn main() {
     let matches = App::new("greenhouse")
@@ -42,8 +42,7 @@ fn main() {
         "config" => serde_json::to_string(&cfg).unwrap(),
     );
 
-    let mut rt = Runtime::new().unwrap();
-    rt.block_on(async {
+    task::block_on(async {
         route::run(&cfg).await;
     });
 }

@@ -11,8 +11,7 @@ use std::sync::Arc;
 use std::task::{Context, Poll};
 use std::time::Duration;
 
-use actix_web::HttpResponse;
-use actix_web::ResponseError;
+use actix_web::{HttpResponse, ResponseError};
 use pin_project::pin_project;
 use prometheus::{IntCounter, IntGauge};
 use tokio::runtime::{Handle, Runtime};

@@ -53,7 +53,7 @@ const MINUTE: u64 = SECOND * TIME_MAGNITUDE_2;
 const HOUR: u64 = MINUTE * TIME_MAGNITUDE_2;
 const DAY: u64 = HOUR * TIME_MAGNITUDE_3;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct ReadableDuration(pub Duration);
 
 impl Into<Duration> for ReadableDuration {
@@ -88,6 +88,10 @@ impl ReadableDuration {
 
     pub fn as_millis(&self) -> u64 {
         time::duration_to_ms(self.0)
+    }
+
+    pub fn is_zero(&self) -> bool {
+        self.0.as_nanos() == 0
     }
 }
 
