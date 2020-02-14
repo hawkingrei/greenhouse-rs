@@ -1,6 +1,6 @@
 #[macro_use]
 extern crate serde_derive;
-#[macro_use(slog_error, slog_info, slog_crit)]
+#[macro_use(slog_error)]
 extern crate slog;
 #[macro_use]
 extern crate slog_global;

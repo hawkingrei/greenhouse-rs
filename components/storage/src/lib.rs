@@ -23,7 +23,7 @@ use threadpool::{Priority, ThreadPool};
 use tokio::{fs, fs::File, io, prelude::*};
 
 use crate::config::StorageConfig;
-pub use crate::lazygc::start_cleaner;
+pub use crate::lazygc::LazygcServer;
 pub use crate::lazygc::Lazygc;
 pub use crate::metrics::*;
 
@@ -94,9 +94,7 @@ impl Storage {
         data: Vec<u8>,
         path: impl AsRef<Path> + std::marker::Send + 'static,
     ) -> io::Result<()> {
-        info!("writing basic {:?}", self.basic_path);
         let p = self.basic_path.join(path);
-        info!("writing to {:?}", p);
         let priority = self.priority_by_size(data.len().try_into().unwrap());
         let future_fn = async move || -> io::Result<()> {
             let timer = STORAGE_WRITE_DURATION_SECONDS_HISTOGRAM_VEC.start_timer();
