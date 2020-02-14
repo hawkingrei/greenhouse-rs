@@ -4,8 +4,11 @@ version = "0.1.0"
 authors = ["wangweizhen <wangweizhen@bilibili.com>"]
 edition = "2018"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[features]
+default = ["tikv_alloc/jemalloc"]
+tcmalloc = ["tikv_alloc/tcmalloc"]
 
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
 actix-http = "1"
 actix-rt = "1"
