@@ -113,6 +113,7 @@ impl Builder {
         });
         let pool = Arc::new(self.inner_builder.build().unwrap());
         super::FuturePool {
+            name: name.to_string(),
             pool,
             env,
             max_tasks: self.max_tasks,
