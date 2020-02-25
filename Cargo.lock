@@ -322,6 +322,41 @@ dependencies = [
 ]
 
 [[package]]
+name = "async-std"
+version = "1.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "538ecb01eb64eecd772087e5b6f7540cbc917f047727339a472dafed2185b267"
+dependencies = [
+ "async-task",
+ "crossbeam-channel 0.4.0",
+ "crossbeam-deque",
+ "crossbeam-utils 0.7.0",
+ "futures-core",
+ "futures-io",
+ "futures-timer",
+ "kv-log-macro",
+ "log 0.4.8",
+ "memchr",
+ "mio",
+ "mio-uds",
+ "num_cpus",
+ "once_cell",
+ "pin-project-lite",
+ "pin-utils",
+ "slab",
+]
+
+[[package]]
+name = "async-task"
+version = "1.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0ac2c016b079e771204030951c366db398864f5026f84a44dafb0ff20f02085d"
+dependencies = [
+ "libc",
+ "winapi 0.3.8",
+]
+
+[[package]]
 name = "async-trait"
 version = "0.1.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -572,7 +607,7 @@ dependencies = [
  "indexmap",
  "lazy_static 1.4.0",
  "libc",
- "log 0.3.9",
+ "log 0.4.8",
  "openssl",
  "panic_hook",
  "pin-project",
@@ -586,7 +621,7 @@ dependencies = [
  "serde_json",
  "slog",
  "slog-async",
- "slog-global 0.1.0 (git+https://github.com/breeswish/slog-global.git?rev=91904ade)",
+ "slog-global",
  "slog-json",
  "slog-term",
  "slog_derive",
@@ -724,6 +759,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c8ec7fcd21571dc78f96cc96243cab8d8f035247c3efd16c687be154c3fa9efa"
 dependencies = [
  "crossbeam-utils 0.6.6",
+]
+
+[[package]]
+name = "crossbeam-channel"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "acec9a3b0b3559f15aee4f90746c4e5e293b701c0f7d3925d24e01645267b68c"
+dependencies = [
+ "crossbeam-utils 0.7.0",
 ]
 
 [[package]]
@@ -876,6 +920,7 @@ dependencies = [
  "actix-http",
  "actix-rt",
  "actix-web",
+ "async-std",
  "bytes 0.4.12",
  "chrono",
  "cibo_util",
@@ -892,7 +937,7 @@ dependencies = [
  "serde_json",
  "slog",
  "slog-async",
- "slog-global 0.1.0 (git+https://github.com/breeswish/slog-global.git?rev=91904ade)",
+ "slog-global",
  "slog-json",
  "slog-term",
  "slog_derive",
@@ -1085,6 +1130,12 @@ name = "futures-task"
 version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7b0a34e53cf6cdcd0178aa573aed466b646eb3db769570841fda0c7ede375a27"
+
+[[package]]
+name = "futures-timer"
+version = "2.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a1de7508b218029b0f01662ed8f61b1c964b3ae99d6f25462d0f55a595109df6"
 
 [[package]]
 name = "futures-util"
@@ -1415,6 +1466,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "kv-log-macro"
+version = "1.0.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8c54d9f465d530a752e6ebdc217e081a7a614b48cb200f6f0aee21ba6bc9aabb"
+dependencies = [
+ "log 0.4.8",
+]
+
+[[package]]
 name = "language-tags"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1659,7 +1719,7 @@ dependencies = [
  "pin-project",
  "prometheus",
  "slog",
- "slog-global 0.1.0 (git+https://github.com/breeswish/slog-global.git?rev=91904ade)",
+ "slog-global",
  "time",
 ]
 
@@ -1736,6 +1796,12 @@ dependencies = [
  "hermit-abi",
  "libc",
 ]
+
+[[package]]
+name = "once_cell"
+version = "1.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b1c601810575c99596d4afc46f78a678c80105117c379eb3650cf99b8a21ce5b"
 
 [[package]]
 name = "openssl"
@@ -2487,7 +2553,7 @@ version = "2.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "78ca925b180da88ccc595cbe4a3d378d79cb49fe5906c2cbc2488eaf700913ee"
 dependencies = [
- "crossbeam-channel",
+ "crossbeam-channel 0.3.9",
  "slog",
  "take_mut",
  "thread_local",
@@ -2501,17 +2567,6 @@ dependencies = [
  "arc-swap 0.3.11",
  "lazy_static 1.4.0",
  "log 0.4.8",
- "slog",
-]
-
-[[package]]
-name = "slog-global"
-version = "0.1.0"
-source = "git+https://github.com/breeswish/slog-global.git?rev=91904ade#91904adec6e602df234e30560e98ef281d81eb84"
-dependencies = [
- "arc-swap 0.3.11",
- "lazy_static 1.4.0",
- "log 0.3.9",
  "slog",
 ]
 
@@ -2600,7 +2655,7 @@ dependencies = [
  "serde_json",
  "slog",
  "slog-async",
- "slog-global 0.1.0 (git+https://github.com/breeswish/slog-global.git?rev=0e23a5baff302a9d7bccd85f8f31e43339c2f2c1)",
+ "slog-global",
  "slog-json",
  "slog-term",
  "slog_derive",

@@ -5,6 +5,7 @@ use std::io::Read;
 use std::path::Path;
 
 use cibo_util::config::ReadableDuration;
+use cibo_util::config::ReadableSize;
 use storage::config::StorageConfig;
 
 pub const DEFAULT_LISTENING_ADDR: &str = "127.0.0.1:20160";
@@ -19,6 +20,7 @@ pub struct Config {
     pub path: String,
     pub backtrace_dir: String,
     pub log_rotation_timespan: ReadableDuration,
+    pub log_rotation_size: ReadableSize,
     // Server listening address.
     pub metric: MetricConfig,
     pub storage: StorageConfig,
@@ -33,6 +35,7 @@ impl Default for Config {
             backtrace_dir: "".to_owned(),
             path: "".to_owned(),
             log_rotation_timespan: ReadableDuration::hours(24),
+            log_rotation_size: ReadableSize::mb(300),
             metric: MetricConfig::default(),
             storage: StorageConfig::default(),
             http_service: HttpServer::default(),

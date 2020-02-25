@@ -9,23 +9,21 @@ use std::time;
 use actix_http::KeepAlive;
 use actix_web::{http::header::ContentEncoding, middleware::Compress, web, App, HttpServer};
 use moni_middleware::Moni;
-use storage::{start_cleaner, DiskMetric, Storage};
+use storage::{LazygcServer, DiskMetric, Storage};
 
 use crate::config::Config;
 use crate::route::metric::metric;
 use crate::route::storage_handle::{read, write};
 
 pub async fn run(cfg: &Config) {
-    info!("listen to {}", &cfg.http_service.addr);
     let sys = actix_rt::System::new("greenhouse");
-
     let storage_config = cfg.storage.clone();
     let pathbuf = Path::new(&storage_config.cache_dir.clone()).to_path_buf();
     let ten_millis = time::Duration::from_secs(2);
     let mut metric_backend = DiskMetric::new(ten_millis, pathbuf.clone());
 
     metric_backend.start().unwrap();
-    start_cleaner(pathbuf.clone(), 0.8, 0.6).await;
+    LazygcServer::new(pathbuf.clone(), 0.8, 0.6);
 
     cibo_util::metrics::monitor_threads("greenhouse")
         .unwrap_or_else(|e| crit!("failed to start monitor thread: {}", e));
@@ -50,6 +48,7 @@ pub async fn run(cfg: &Config) {
     .bind(&cfg.http_service.addr.clone())
     .unwrap_or_else(|_| panic!("Can not bind to {}", &cfg.http_service.addr))
     .run();
+    info!("listen to {}", &cfg.http_service.addr);
 
     HttpServer::new(move || App::new().route("/prometheus", web::get().to(metric)))
         .workers(1)

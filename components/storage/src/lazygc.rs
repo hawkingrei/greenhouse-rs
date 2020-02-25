@@ -6,8 +6,7 @@ use std::thread;
 use std::time;
 
 use tokio::fs;
-use tokio::runtime::Runtime;
-
+use tokio::task::JoinHandle;
 use walkdir::WalkDir;
 
 use crate::metrics::*;
@@ -62,9 +61,11 @@ impl Lazygc {
 
     pub async fn start(&mut self) {
         if DISK_USED.get() / DISK_TOTAL.get() > self.min_percent_block_free {
+            info!("start to clearn");
             self.get().await;
             for (key, _) in self.entry_map.iter() {
-                fs::remove_file(&key.path).await;
+                info!("rm file"; "file" => &key.path.to_str());
+                std::fs::remove_file(&key.path);
             }
             self.entry_map.clear();
         }
@@ -73,7 +74,7 @@ impl Lazygc {
     async fn get(&mut self) {
         for entry in WalkDir::new(&self.path).into_iter().filter_map(|e| e.ok()) {
             let p = entry.path();
-            let meta = match fs::metadata(&p).await {
+            let meta = match std::fs::metadata(&p) {
                 Ok(meta) => meta,
                 Err(_) => {
                     continue;
@@ -87,6 +88,7 @@ impl Lazygc {
                     },
                     meta.size(),
                 );
+                self.entry_total_size += meta.size();
             }
             self.clean_map();
         }
@@ -103,13 +105,43 @@ impl Lazygc {
     }
 }
 
-pub async fn start_cleaner(path: PathBuf, min_percent_block_free: f64, stop_percent_block: f64) {
-    let rt = Runtime::new().unwrap();
-    rt.spawn(async move {
-        let mut gc = Lazygc::new(path, min_percent_block_free, stop_percent_block);
-        loop {
-            gc.start().await;
-            thread::sleep(time::Duration::from_millis(1024 * 60));
-        }
-    });
+pub struct LazygcServer {
+    gc_handle: Option<JoinHandle<()>>,
+}
+
+impl LazygcServer {
+    pub fn new(
+        path: PathBuf,
+        min_percent_block_free: f64,
+        stop_percent_block: f64,
+    ) -> LazygcServer {
+        info!("start clearner");
+        use tokio::runtime::Builder as TokioBuilder;
+        let rt = TokioBuilder::new()
+            .basic_scheduler()
+            .core_threads(1)
+            .thread_stack_size(3 * 1024 * 1024)
+            .thread_name("lazygc")
+            .enable_io()
+            .build()
+            .unwrap();
+        let h = rt.spawn(async move {
+            let mut gc = Lazygc::new(path, min_percent_block_free, stop_percent_block);
+            loop {
+                gc.start().await;
+                thread::sleep(time::Duration::from_millis(1024));
+            }
+        });
+
+        LazygcServer { gc_handle: Some(h) }
+    }
+}
+
+impl Drop for LazygcServer {
+    fn drop(&mut self) {
+        info!("stop cleaner server");
+        if let Some(h) = self.gc_handle.take() {
+            h;
+        };
+    }
 }

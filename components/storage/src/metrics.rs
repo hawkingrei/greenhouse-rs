@@ -75,8 +75,8 @@ impl DiskMetric {
         let builder = thread::Builder::new().name("disk-usage-service".to_string());
         let d = self.duration;
         let p = self.path.clone();
+        info!("disk metric start");
         let h = builder.spawn(move || loop {
-            info!("disk metric start");
             thread::sleep(d);
             get_disk_usage_prom(p.as_path());
         })?;
