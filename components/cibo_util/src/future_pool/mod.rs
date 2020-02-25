@@ -3,8 +3,8 @@ mod metrics;
 
 pub use self::builder::{Builder, Config};
 
-use futures::future::FutureExt;
 use std::cell::Cell;
+use std::error::Error;
 use std::future::Future;
 use std::pin::Pin;
 use std::sync::Arc;
@@ -12,6 +12,7 @@ use std::task::{Context, Poll};
 use std::time::Duration;
 
 use actix_web::{HttpResponse, ResponseError};
+use futures::future::FutureExt;
 use pin_project::pin_project;
 use prometheus::{IntCounter, IntGauge};
 use tokio::runtime::{Handle, Runtime};
@@ -72,6 +73,7 @@ pub struct Env {
 
 #[derive(Clone)]
 pub struct FuturePool {
+    name: String,
     pool: Arc<Runtime>,
     env: Arc<Env>,
     max_tasks: usize,
@@ -103,6 +105,7 @@ impl FuturePool {
         let current_tasks = self.get_running_task_count();
         if current_tasks >= self.max_tasks {
             Err(ErrorPoolFull {
+                name: self.name.clone(),
                 current_tasks,
                 max_tasks: self.max_tasks,
             })
@@ -161,21 +164,22 @@ fn try_tick_thread(env: &Env) {
     })
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[derive(Clone, PartialEq, Eq, Debug)]
 pub struct ErrorPoolFull {
+    pub name: String,
     pub current_tasks: usize,
     pub max_tasks: usize,
 }
 
 impl std::fmt::Display for ErrorPoolFull {
     fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(fmt, "future pool is full")
+        write!(fmt, "{} {}", self.name, self.description())
     }
 }
 
 impl ResponseError for ErrorPoolFull {
     fn error_response(&self) -> HttpResponse {
-        HttpResponse::BadRequest().body("future pool is full".to_string())
+        HttpResponse::BadRequest().body(format!("{} future pool is full", self.name))
     }
 }
 
