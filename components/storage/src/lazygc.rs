@@ -92,7 +92,7 @@ impl Lazygc {
                     meta.size(),
                 );
                 self.entry_total_size += meta.size();
-                info!("gc insert {}", p.to_path_buf());
+                info!("gc insert {:?}", p.to_path_buf());
             }
             self.clean_map();
         }
