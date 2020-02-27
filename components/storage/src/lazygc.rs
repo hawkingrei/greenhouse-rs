@@ -46,6 +46,7 @@ pub struct Lazygc {
 
     entry_map: BTreeMap<EntryInfo, u64>,
     entry_total_size: u64,
+    total_size: u64,
 }
 
 impl Lazygc {
@@ -56,11 +57,13 @@ impl Lazygc {
             stop_percent_block,
             entry_map: BTreeMap::new(),
             entry_total_size: 0,
+            total_size: 0,
         }
     }
 
     pub fn start(&mut self) {
         if let Some((_, bytes_free, bytes_used)) = get_disk_usage(self.path.clone()) {
+            self.total_size = bytes_free + bytes_used;
             if bytes_used as f64 / bytes_free as f64 > self.min_percent_block_free {
                 info!("start to clearn");
                 self.get();
@@ -99,7 +102,7 @@ impl Lazygc {
     }
 
     fn clean_map(&mut self) {
-        let stop = self.stop_percent_block * self.entry_total_size as f64;
+        let stop = self.stop_percent_block * self.total_size as f64;
         while (stop as u64) < self.entry_total_size {
             info!("{} {}", stop, self.entry_total_size);
             let (key, value) = self.entry_map.first_key_value().unwrap();
