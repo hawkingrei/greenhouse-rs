@@ -9,8 +9,8 @@ mod util;
 
 use crate::util::setup::initial_logger;
 
-use std::path::Path;
 use futures::join;
+use std::path::Path;
 
 use async_std::task;
 use cibo_util;
@@ -52,13 +52,12 @@ fn main() {
         let min_percent_block_free: f64 = 0.8;
         let stop_percent_block: f64 = 0.6;
         join!(
-            async_main(&cfg),
-            LazygcServer::new(pathbuf.clone(), min_percent_block_free, stop_percent_block)
+            LazygcServer::new(pathbuf.clone(), min_percent_block_free, stop_percent_block),
+            async_main(&cfg)
         )
     });
 }
 
 async fn async_main(cfg: &Config) -> () {
-
     route::run(&cfg).await;
 }

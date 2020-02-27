@@ -140,13 +140,8 @@ impl LazygcServer {
     }
 }
 
-/*
 impl Drop for LazygcServer {
     fn drop(&mut self) {
         info!("stop cleaner server");
-        if let Some(h) = self.gc_handle.take() {
-            h;
-        };
     }
 }
-*/
