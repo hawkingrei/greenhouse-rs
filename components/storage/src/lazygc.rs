@@ -60,6 +60,12 @@ impl Lazygc {
     }
 
     pub async fn start(&mut self) {
+        info!(
+            "DISK_USED:{} DISK_TOTAL:{} min_percent_block_free:{}",
+            DISK_USED.get(),
+            DISK_TOTAL.get(),
+            self.min_percent_block_free
+        );
         if DISK_USED.get() / DISK_TOTAL.get() > self.min_percent_block_free {
             info!("start to clearn");
             self.get().await;
