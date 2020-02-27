@@ -21,7 +21,7 @@ pub async fn run(cfg: &Config) {
     let pathbuf = Path::new(&storage_config.cache_dir.clone()).to_path_buf();
     let ten_millis = time::Duration::from_secs(2);
     let mut metric_backend = DiskMetric::new(ten_millis, pathbuf.clone());
-    let mut lazygc_backend = LazygcServer::new(pathbuf.clone(), 0.8, 0.6);
+    let mut lazygc_backend = LazygcServer::new(pathbuf.clone(), 0.8, 0.4);
     metric_backend.start().unwrap();
     lazygc_backend.start().unwrap();
     cibo_util::metrics::monitor_threads("greenhouse")
