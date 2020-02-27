@@ -3,12 +3,9 @@ use std::collections::BTreeMap;
 use std::io;
 use std::os::unix::fs::MetadataExt;
 use std::path::PathBuf;
-use std::pin::Pin;
 use std::thread;
 use std::time;
 
-use tokio::fs;
-use tokio::task::JoinHandle;
 use walkdir::WalkDir;
 
 use crate::metrics::*;

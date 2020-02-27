@@ -9,15 +9,11 @@ mod util;
 
 use crate::util::setup::initial_logger;
 
-use futures::join;
-use std::path::Path;
-
 use async_std::task;
 use cibo_util;
 use clap::{App, Arg};
 use greenhouse::config::Config;
 use greenhouse::route;
-use storage::{DiskMetric, LazygcServer, Storage};
 
 fn main() {
     let matches = App::new("greenhouse")
