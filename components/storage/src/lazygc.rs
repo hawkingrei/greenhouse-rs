@@ -103,7 +103,7 @@ impl Lazygc {
     fn clean_map(&mut self) {
         let stop = (self.min_percent_block_free - self.stop_percent_block) * self.total_size as f64;
         while (stop as u64) < self.entry_total_size {
-            info!("rev map {} {}", stop, self.entry_total_size);
+            info!("rev map {} {} {}", stop, self.entry_total_size,self.entry_map.len());
             let (key, value) = self.entry_map.first_key_value().unwrap();
             let key_copy = key.clone();
             self.entry_total_size -= value;
