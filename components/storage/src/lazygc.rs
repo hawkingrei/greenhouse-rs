@@ -131,6 +131,7 @@ impl LazygcServer {
             stop_percent_block,
         };
     }
+
     pub fn start(&mut self) -> Result<(), io::Error> {
         let builder = thread::Builder::new().name("lazy-service".to_string());
         let gc = Lazygc::new(
@@ -138,7 +139,6 @@ impl LazygcServer {
             self.min_percent_block_free,
             self.stop_percent_block,
         );
-        info!("disk metric start");
         let h = builder.spawn(move || loop {
             info!("lazy gc start");
             gc.clone().start()
