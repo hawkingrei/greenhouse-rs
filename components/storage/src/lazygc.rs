@@ -82,7 +82,6 @@ impl Lazygc {
             let meta = match std::fs::metadata(&p) {
                 Ok(meta) => meta,
                 Err(_) => {
-                    info!("get continue");
                     continue;
                 }
             };
