@@ -132,8 +132,10 @@ impl LazygcServer {
         let h = rt.spawn(async move {
             let mut gc = Lazygc::new(path, min_percent_block_free, stop_percent_block);
             loop {
+                info!("start async clearner");
                 gc.start().await;
                 thread::sleep(time::Duration::from_millis(1024));
+                info!("start clearner over sleep");
             }
         });
         h
