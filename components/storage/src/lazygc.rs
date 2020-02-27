@@ -128,14 +128,9 @@ impl LazygcServer {
             .build()
             .unwrap();
 
-        let h = rt.spawn(async move {
-            info!("start async clearner");
-            Lazygc::new(path, min_percent_block_free, stop_percent_block)
-                .start()
-                .await;
-            info!("start clearner over sleep");
-        });
-        h.await;
+        Lazygc::new(path, min_percent_block_free, stop_percent_block)
+            .start()
+            .await;
     }
 }
 
