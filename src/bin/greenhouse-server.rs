@@ -44,5 +44,6 @@ fn main() {
 
     task::block_on(async {
         route::run(&cfg).await;
+        info!("doing");
     });
 }
