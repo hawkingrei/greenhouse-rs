@@ -9,7 +9,7 @@ use std::time;
 use actix_http::KeepAlive;
 use actix_web::{http::header::ContentEncoding, middleware::Compress, web, App, HttpServer};
 use moni_middleware::Moni;
-use storage::{LazygcServer, DiskMetric, Storage};
+use storage::{DiskMetric, LazygcServer, Storage};
 
 use crate::config::Config;
 use crate::route::metric::metric;
@@ -23,7 +23,6 @@ pub async fn run(cfg: &Config) {
     let mut metric_backend = DiskMetric::new(ten_millis, pathbuf.clone());
 
     metric_backend.start().unwrap();
-    LazygcServer::new(pathbuf.clone(), 0.8, 0.6);
 
     cibo_util::metrics::monitor_threads("greenhouse")
         .unwrap_or_else(|e| crit!("failed to start monitor thread: {}", e));

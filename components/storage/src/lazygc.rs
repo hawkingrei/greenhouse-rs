@@ -111,16 +111,14 @@ impl Lazygc {
     }
 }
 
-pub struct LazygcServer {
-    gc_handle: Option<JoinHandle<()>>,
-}
+pub struct LazygcServer {}
 
 impl LazygcServer {
-    pub fn new(
+    pub async fn new(
         path: PathBuf,
         min_percent_block_free: f64,
         stop_percent_block: f64,
-    ) -> LazygcServer {
+    ) -> JoinHandle<()> {
         info!("start clearner");
         use tokio::runtime::Builder as TokioBuilder;
         let rt = TokioBuilder::new()
@@ -138,11 +136,11 @@ impl LazygcServer {
                 thread::sleep(time::Duration::from_millis(1024));
             }
         });
-
-        LazygcServer { gc_handle: Some(h) }
+        h
     }
 }
 
+/*
 impl Drop for LazygcServer {
     fn drop(&mut self) {
         info!("stop cleaner server");
@@ -151,3 +149,4 @@ impl Drop for LazygcServer {
         };
     }
 }
+*/

@@ -9,11 +9,14 @@ mod util;
 
 use crate::util::setup::initial_logger;
 
+use std::path::Path;
+
 use async_std::task;
 use cibo_util;
 use clap::{App, Arg};
 use greenhouse::config::Config;
 use greenhouse::route;
+use storage::{DiskMetric, LazygcServer, Storage};
 
 fn main() {
     let matches = App::new("greenhouse")
@@ -43,8 +46,15 @@ fn main() {
     );
 
     task::block_on(async {
-        route::run(&cfg).await;
-        info!("doing");
+        async_main(&cfg).await;
     });
-    info!("doing2");
+}
+
+async fn async_main(cfg: &Config) -> () {
+    let storage_config = cfg.storage.clone();
+    let pathbuf = Path::new(&storage_config.cache_dir.clone()).to_path_buf();
+    route::run(&cfg).await;
+    let min_percent_block_free: f64 = 0.8;
+    let stop_percent_block: f64 = 0.6;
+    LazygcServer::new(pathbuf.clone(), min_percent_block_free, stop_percent_block).await;
 }
