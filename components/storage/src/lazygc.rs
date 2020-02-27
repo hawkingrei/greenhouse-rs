@@ -2,6 +2,7 @@ use std::cmp::Ordering;
 use std::collections::BTreeMap;
 use std::os::unix::fs::MetadataExt;
 use std::path::PathBuf;
+use std::pin::Pin;
 use std::thread;
 use std::time;
 
@@ -39,6 +40,7 @@ impl PartialEq for EntryInfo {
     }
 }
 
+#[derive(Clone)]
 pub struct Lazygc {
     path: PathBuf,
     min_percent_block_free: f64,
@@ -114,11 +116,7 @@ impl Lazygc {
 pub struct LazygcServer {}
 
 impl LazygcServer {
-    pub async fn new(
-        path: PathBuf,
-        min_percent_block_free: f64,
-        stop_percent_block: f64,
-    ) -> JoinHandle<()> {
+    pub async fn new(path: PathBuf, min_percent_block_free: f64, stop_percent_block: f64) {
         info!("start clearner");
         use tokio::runtime::Builder as TokioBuilder;
         let rt = TokioBuilder::new()
@@ -129,16 +127,15 @@ impl LazygcServer {
             .enable_io()
             .build()
             .unwrap();
+
         let h = rt.spawn(async move {
-            let mut gc = Lazygc::new(path, min_percent_block_free, stop_percent_block);
-            loop {
-                info!("start async clearner");
-                gc.start().await;
-                thread::sleep(time::Duration::from_millis(1024));
-                info!("start clearner over sleep");
-            }
+            info!("start async clearner");
+            Lazygc::new(path, min_percent_block_free, stop_percent_block)
+                .start()
+                .await;
+            info!("start clearner over sleep");
         });
-        h
+        h.await;
     }
 }
 
