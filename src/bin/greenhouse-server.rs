@@ -46,4 +46,5 @@ fn main() {
         route::run(&cfg).await;
         info!("doing");
     });
+    info!("doing2");
 }
