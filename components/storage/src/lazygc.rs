@@ -63,20 +63,16 @@ impl Lazygc {
     }
 
     pub fn start(&mut self) {
-        info!(
-            "DISK_USED:{} DISK_TOTAL:{} min_percent_block_free:{}",
-            DISK_USED.get(),
-            DISK_TOTAL.get(),
-            self.min_percent_block_free
-        );
-        if DISK_USED.get() / DISK_TOTAL.get() > self.min_percent_block_free {
-            info!("start to clearn");
-            self.get();
-            for (key, _) in self.entry_map.iter() {
-                info!("rm file"; "file" => &key.path.to_str());
-                std::fs::remove_file(&key.path);
+        if let Some((_, bytes_free, bytes_used)) = get_disk_usage(self.path.clone()) {
+            if bytes_used as f64 / bytes_free as f64 > self.min_percent_block_free {
+                info!("start to clearn");
+                self.get();
+                for (key, _) in self.entry_map.iter() {
+                    info!("rm file"; "file" => &key.path.to_str());
+                    std::fs::remove_file(&key.path);
+                }
+                self.entry_map.clear();
             }
-            self.entry_map.clear();
         }
     }
 
