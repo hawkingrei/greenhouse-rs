@@ -23,7 +23,9 @@ pub async fn run(cfg: &Config) {
     let mut metric_backend = DiskMetric::new(ten_millis, pathbuf.clone());
 
     metric_backend.start().unwrap();
-
+    LazygcServer::new(pathbuf.clone(), 0.8, 0.6)
+        .start()
+        .unwrap();
     cibo_util::metrics::monitor_threads("greenhouse")
         .unwrap_or_else(|e| crit!("failed to start monitor thread: {}", e));
 

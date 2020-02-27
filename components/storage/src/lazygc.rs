@@ -1,5 +1,6 @@
 use std::cmp::Ordering;
 use std::collections::BTreeMap;
+use std::io;
 use std::os::unix::fs::MetadataExt;
 use std::path::PathBuf;
 use std::pin::Pin;
@@ -61,7 +62,7 @@ impl Lazygc {
         }
     }
 
-    pub async fn start(&mut self) {
+    pub fn start(&mut self) {
         info!(
             "DISK_USED:{} DISK_TOTAL:{} min_percent_block_free:{}",
             DISK_USED.get(),
@@ -70,7 +71,7 @@ impl Lazygc {
         );
         if DISK_USED.get() / DISK_TOTAL.get() > self.min_percent_block_free {
             info!("start to clearn");
-            self.get().await;
+            self.get();
             for (key, _) in self.entry_map.iter() {
                 info!("rm file"; "file" => &key.path.to_str());
                 std::fs::remove_file(&key.path);
@@ -79,7 +80,7 @@ impl Lazygc {
         }
     }
 
-    async fn get(&mut self) {
+    fn get(&mut self) {
         for entry in WalkDir::new(&self.path).into_iter().filter_map(|e| e.ok()) {
             let p = entry.path();
             let meta = match std::fs::metadata(&p) {
@@ -113,29 +114,49 @@ impl Lazygc {
     }
 }
 
-pub struct LazygcServer {}
+pub struct LazygcServer {
+    lazygc_handle: Option<thread::JoinHandle<()>>,
+
+    path: PathBuf,
+    min_percent_block_free: f64,
+    stop_percent_block: f64,
+}
 
 impl LazygcServer {
-    pub async fn new(path: PathBuf, min_percent_block_free: f64, stop_percent_block: f64) {
-        info!("start clearner");
-        use tokio::runtime::Builder as TokioBuilder;
-        let rt = TokioBuilder::new()
-            .basic_scheduler()
-            .core_threads(1)
-            .thread_stack_size(3 * 1024 * 1024)
-            .thread_name("lazygc")
-            .enable_io()
-            .build()
-            .unwrap();
-
-        Lazygc::new(path, min_percent_block_free, stop_percent_block)
-            .start()
-            .await;
+    pub fn new(
+        path: PathBuf,
+        min_percent_block_free: f64,
+        stop_percent_block: f64,
+    ) -> LazygcServer {
+        return LazygcServer {
+            lazygc_handle: None,
+            path,
+            min_percent_block_free,
+            stop_percent_block,
+        };
+    }
+    pub fn start(&mut self) -> Result<(), io::Error> {
+        let builder = thread::Builder::new().name("lazy-service".to_string());
+        let gc = Lazygc::new(
+            self.path.clone(),
+            self.min_percent_block_free,
+            self.stop_percent_block,
+        );
+        info!("disk metric start");
+        let h = builder.spawn(move || loop {
+            info!("lazy gc start");
+            gc.clone().start()
+        })?;
+        self.lazygc_handle = Some(h);
+        Ok(())
     }
 }
 
 impl Drop for LazygcServer {
     fn drop(&mut self) {
         info!("stop cleaner server");
+        if let Some(h) = self.lazygc_handle.take() {
+            h.join().unwrap();
+        };
     }
 }

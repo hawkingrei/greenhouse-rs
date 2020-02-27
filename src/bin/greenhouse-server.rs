@@ -47,17 +47,6 @@ fn main() {
     );
 
     task::block_on(async {
-        let storage_config = cfg.storage.clone();
-        let pathbuf = Path::new(&storage_config.cache_dir.clone()).to_path_buf();
-        let min_percent_block_free: f64 = 0.8;
-        let stop_percent_block: f64 = 0.6;
-        join!(
-            LazygcServer::new(pathbuf.clone(), min_percent_block_free, stop_percent_block),
-            async_main(&cfg)
-        )
+        route::run(&cfg).await;
     });
-}
-
-async fn async_main(cfg: &Config) -> () {
-    route::run(&cfg).await;
 }
