@@ -139,9 +139,11 @@ impl LazygcServer {
             self.min_percent_block_free,
             self.stop_percent_block,
         );
+        let ten_millis = time::Duration::from_secs(10);
         let h = builder.spawn(move || loop {
             info!("lazy gc start");
-            gc.clone().start()
+            thread::sleep(ten_millis);
+            gc.clone().start();
         })?;
         self.lazygc_handle = Some(h);
         Ok(())
