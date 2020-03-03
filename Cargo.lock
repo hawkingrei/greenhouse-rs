@@ -11,7 +11,7 @@ dependencies = [
  "futures-core",
  "futures-sink",
  "log 0.4.8",
- "tokio 0.2.11",
+ "tokio 0.2.13",
  "tokio-util",
 ]
 
@@ -114,14 +114,14 @@ dependencies = [
  "actix-threadpool",
  "copyless",
  "futures 0.3.4",
- "tokio 0.2.11",
+ "tokio 0.2.13",
 ]
 
 [[package]]
 name = "actix-server"
-version = "1.0.1"
+version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "51d3455eaac03ca3e49d7b822eb35c884b861f715627254ccbe4309d08f1841a"
+checksum = "582a7173c281a4f46b5aa168a11e7f37183dcb71177a39312cc2264da7a632c9"
 dependencies = [
  "actix-codec",
  "actix-rt",
@@ -265,9 +265,9 @@ checksum = "5d2e7343e7fc9de883d1b0341e0b13970f764c14101234857d2ddafa1cb1cac2"
 
 [[package]]
 name = "aho-corasick"
-version = "0.7.8"
+version = "0.7.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "743ad5a418686aad3b87fd14c43badd828cf26e214a00f92a384291cf22e1811"
+checksum = "d5e63fd144e18ba274ae7095c0197a870a7b9468abc801dd62f190d80817d2ec"
 dependencies = [
  "memchr",
 ]
@@ -629,7 +629,7 @@ dependencies = [
  "tempfile",
  "tikv_alloc",
  "time",
- "tokio 0.2.11",
+ "tokio 0.2.13",
  "utime",
 ]
 
@@ -947,7 +947,7 @@ dependencies = [
  "storage",
  "threadpool 0.1.0",
  "tikv_alloc",
- "tokio 0.2.11",
+ "tokio 0.2.13",
  "toml",
  "zstd",
 ]
@@ -1218,7 +1218,7 @@ dependencies = [
  "indexmap",
  "log 0.4.8",
  "slab",
- "tokio 0.2.11",
+ "tokio 0.2.13",
  "tokio-util",
 ]
 
@@ -1629,9 +1629,9 @@ checksum = "2a60c7ce501c71e03a9c9c0d35b861413ae925bd979cc7a4e30d060069aaac8d"
 
 [[package]]
 name = "mime_guess"
-version = "2.0.1"
+version = "2.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1a0ed03949aef72dbdf3116a383d7b38b4768e6f960528cd6a6044aa9ed68599"
+checksum = "2684d4c2e97d99848d30b324b00c8fcc7e5c897b7cbb5819b09e7c90e8baf212"
 dependencies = [
  "mime",
  "unicase",
@@ -2041,9 +2041,9 @@ dependencies = [
 
 [[package]]
 name = "protobuf"
-version = "2.10.1"
+version = "2.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6686ddd96a8dbe2687b5f2a687b2cfb520854010ec480f2d74c32e7c9873d3c5"
+checksum = "37a5325d019a4d837d3abde0a836920f959e33d350f77b5f1e289e061e774942"
 
 [[package]]
 name = "publicsuffix"
@@ -2292,9 +2292,9 @@ dependencies = [
 
 [[package]]
 name = "regex-syntax"
-version = "0.6.14"
+version = "0.6.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b28dfe3fe9badec5dbf0a79a9cccad2cfc2ab5484bdb3e44cbd1ae8b3ba2be06"
+checksum = "1132f845907680735a84409c3bebc64d1364a5683ffbce899550cd09d5eaefc1"
 
 [[package]]
 name = "remove_dir_all"
@@ -2663,7 +2663,7 @@ dependencies = [
  "slog-term",
  "slog_derive",
  "threadpool 0.1.0",
- "tokio 0.2.11",
+ "tokio 0.2.13",
  "walkdir",
 ]
 
@@ -2828,7 +2828,7 @@ dependencies = [
  "serde",
  "serde_derive",
  "serde_json",
- "tokio 0.2.11",
+ "tokio 0.2.13",
 ]
 
 [[package]]
@@ -2886,9 +2886,9 @@ dependencies = [
 
 [[package]]
 name = "tokio"
-version = "0.2.11"
+version = "0.2.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8fdd17989496f49cdc57978c96f0c9fe5e4a58a8bddc6813c449a4624f6a030b"
+checksum = "0fa5e81d6bc4e67fe889d5783bd2a128ab2e0cfa487e0be16b6a8d177b101616"
 dependencies = [
  "bytes 0.5.4",
  "fnv",
@@ -2952,9 +2952,9 @@ dependencies = [
 
 [[package]]
 name = "tokio-macros"
-version = "0.2.4"
+version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f4b1e7ed7d5d4c2af3d999904b0eebe76544897cdbfb2b9684bed2174ab20f7c"
+checksum = "f0c3acc6aa564495a0f2e1d59fab677cd7f81a19994cfc7f3ad0e64301560389"
 dependencies = [
  "proc-macro2 1.0.9",
  "quote 1.0.2",
@@ -3044,7 +3044,7 @@ dependencies = [
  "futures-sink",
  "log 0.4.8",
  "pin-project-lite",
- "tokio 0.2.11",
+ "tokio 0.2.13",
 ]
 
 [[package]]
@@ -3072,7 +3072,7 @@ dependencies = [
  "rand 0.7.3",
  "smallvec 1.2.0",
  "socket2",
- "tokio 0.2.11",
+ "tokio 0.2.13",
  "url 2.1.1",
 ]
 
@@ -3091,7 +3091,7 @@ dependencies = [
  "lru-cache",
  "resolv-conf",
  "smallvec 1.2.0",
- "tokio 0.2.11",
+ "tokio 0.2.13",
  "trust-dns-proto",
 ]
 

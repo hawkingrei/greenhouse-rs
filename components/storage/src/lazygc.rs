@@ -64,7 +64,7 @@ impl Lazygc {
     pub fn start(&mut self) {
         if let Some((_, bytes_free, bytes_used)) = get_disk_usage(self.path.clone()) {
             self.total_size = bytes_free + bytes_used;
-            if bytes_used as f64 / bytes_free as f64 > self.min_percent_block_free {
+            if bytes_used as f64 / self.total_size as f64 > self.min_percent_block_free {
                 info!("start to clearn");
                 self.get();
                 for (key, _) in self.entry_map.iter() {
