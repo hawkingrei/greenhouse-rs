@@ -1,5 +1,15 @@
 use prometheus::*;
 lazy_static! {
+    pub static ref GREENHOUSE_READING_COUNT: IntCounter = register_int_counter!(opts!(
+        "greenhouse_reading_count",
+        "greenhouse_reading_count"
+    ))
+    .unwrap();
+    pub static ref GREENHOUSE_WRITING_COUNT: IntCounter = register_int_counter!(opts!(
+        "greenhouse_writing_count",
+        "greenhouse_writing_count"
+    ))
+    .unwrap();
     pub static ref TOTAL_TRANSACTION: IntCounter = register_int_counter!(opts!(
         "greenhouse_total_transaction",
         "greenhouse_total_transaction"

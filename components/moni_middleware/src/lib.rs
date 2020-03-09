@@ -179,6 +179,7 @@ impl<B> Drop for MoniLog<B> {
     fn drop(&mut self) {
         if let Some(ref info) = self.info {
             if info.method == Method::GET {
+                GREENHOUSE_READING_COUNT.inc();
                 if info.url_path.contains("/ac/") {
                     match info.status_code {
                         200 => {
@@ -189,6 +190,7 @@ impl<B> Drop for MoniLog<B> {
                         _ => GREENHOUSE_HTTP_ERROR.inc(),
                     }
                 } else {
+                    GREENHOUSE_WRITING_COUNT.inc();
                     match info.status_code {
                         200 => {
                             CAS_HITS.inc();
