@@ -10,7 +10,8 @@ macro_rules! storage_config {
         #[serde(rename_all = "kebab-case")]
         pub struct $struct_name {
             pub cache_dir: String,
-            pub threadpool: ThreadPoolConfig,
+            pub reading_threadpool: ThreadPoolConfig,
+            pub writing_threadpool: ThreadPoolConfig,
         }
 
         impl $struct_name {
@@ -30,7 +31,8 @@ impl Default for StorageConfig {
     fn default() -> Self {
         Self {
             cache_dir: "".to_string(),
-            threadpool: Default::default(),
+            reading_threadpool: Default::default(),
+            writing_threadpool: Default::default(),
         }
     }
 }

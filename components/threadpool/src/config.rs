@@ -9,6 +9,7 @@ macro_rules! threadpool_config {
         #[serde(default)]
         #[serde(rename_all = "kebab-case")]
         pub struct $struct_name {
+            pub name: String,
             pub high_concurrency: usize,
             pub normal_concurrency: usize,
             pub low_concurrency: usize,
@@ -44,6 +45,7 @@ macro_rules! threadpool_config {
 
             pub fn default_for_test() -> Self {
                 Self {
+                    name: "pool".to_string(),
                     high_concurrency: 2,
                     normal_concurrency: 2,
                     low_concurrency: 2,
@@ -115,6 +117,7 @@ threadpool_config!(ThreadPoolConfig, "thumb");
 impl Default for ThreadPoolConfig {
     fn default() -> Self {
         Self {
+            name: "pool".to_string(),
             high_concurrency: 16,
             normal_concurrency: 8,
             low_concurrency: 4,

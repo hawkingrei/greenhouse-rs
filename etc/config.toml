@@ -2,10 +2,21 @@ log-level = "info"
 backtrace-dir = "./"
 log-file = "./thumbnail.log"
 
-[storage.threadpool]
+[storage.reading-threadpool]
+name = "reading-pool"
 high-concurrency = 2
-normal-concurrency = 2
-low-concurrency = 2
+normal-concurrency = 1
+low-concurrency = 1
+max-tasks-per-worker-high = 500
+max-tasks-per-worker-normal = 300
+max-tasks-per-worker-low = 200
+stack-size = "1024MB"
+
+[storage.writing-threadpool]
+name = "writing-pool"
+high-concurrency = 2
+normal-concurrency = 1
+low-concurrency = 1
 max-tasks-per-worker-high = 500
 max-tasks-per-worker-normal = 300
 max-tasks-per-worker-low = 200
