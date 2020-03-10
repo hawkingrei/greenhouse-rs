@@ -28,7 +28,8 @@ pub use crate::lazygc::LazygcServer;
 pub use crate::metrics::*;
 
 pub struct Storage {
-    pool: Arc<ThreadPool>,
+    reading_pool: Arc<ThreadPool>,
+    writing_pool: Arc<ThreadPool>,
     basic_path: PathBuf,
 
     metric_handle: Option<thread::JoinHandle<()>>,
@@ -41,7 +42,8 @@ impl Storage {
             std::fs::create_dir_all(path.as_path()).unwrap();
         }
         Storage {
-            pool: Arc::new(ThreadPool::new(config.threadpool)),
+            reading_pool: Arc::new(ThreadPool::new(config.reading_threadpool)),
+            writing_pool: Arc::new(ThreadPool::new(config.writing_threadpool)),
             basic_path: path,
             metric_handle: None,
         }
@@ -80,7 +82,7 @@ impl Storage {
             timer.observe_duration();
             Ok(e.into_inner())
         };
-        match self.pool.spawn(future_fn(), priority) {
+        match self.reading_pool.spawn(future_fn(), priority) {
             Ok(middle) => match middle.await {
                 Ok(data) => data,
                 Err(e) => Err(io::Error::new(io::ErrorKind::WouldBlock, e)),
@@ -111,7 +113,7 @@ impl Storage {
             timer.observe_duration();
             Ok(())
         };
-        match self.pool.spawn(future_fn(), priority) {
+        match self.writing_pool.spawn(future_fn(), priority) {
             Ok(middle) => match middle.await {
                 Ok(data) => data,
                 Err(e) => Err(io::Error::new(io::ErrorKind::WouldBlock, e)),

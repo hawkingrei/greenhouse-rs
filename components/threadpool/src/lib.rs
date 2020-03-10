@@ -28,7 +28,11 @@ pub struct ThreadPool {
 
 impl ThreadPool {
     pub fn new(config: ThreadPoolConfig) -> Self {
-        let names = vec!["pool-low", "pool-normal", "pool-high"];
+        let names = vec![
+            format!("{}-low", config.name),
+            format!("{}-normal", config.name),
+            format!("{}-high", config.name),
+        ];
         let configs: Vec<Config> = config.to_future_pool_configs();
         let mut pools: Vec<FuturePool> = configs
             .into_iter()
