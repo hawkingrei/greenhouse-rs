@@ -27,10 +27,13 @@ pub async fn write<'a>(
     while let Some(item) = body.next().await {
         buf.extend_from_slice(&item?);
     }
-    match storage.write(buf.to_vec(), url).await {
+    match storage.write(buf.to_vec(), url.clone()).await {
         Ok(_) => Ok(HttpResponse::Ok().into()),
-        Err(e) => Ok(HttpResponse::BadRequest()
-            .content_type("text/plain")
-            .body(e.to_string())),
+        Err(e) => {
+            error!("fail to writing";"url" => url,"err" => e.to_string());
+            Ok(HttpResponse::BadRequest()
+                .content_type("text/plain")
+                .body(e.to_string()))
+        }
     }
 }
