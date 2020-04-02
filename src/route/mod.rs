@@ -30,7 +30,6 @@ pub async fn run(cfg: &Config) {
     let listener = TcpBuilder::new_v4().unwrap();
     listener.reuse_address(true).unwrap();
     listener.reuse_port(true).unwrap();
-    listener.bind(&cfg.http_service.addr.clone()).unwrap();
     HttpServer::new(move || {
         App::new()
             .wrap(Moni::new())
@@ -49,6 +48,7 @@ pub async fn run(cfg: &Config) {
         cfg.http_service.keepalive.as_secs().try_into().unwrap(),
     ))
     .listen(listener.to_tcp_listener().unwrap())
+    .bind(&cfg.http_service.addr.clone())
     .unwrap_or_else(|_| panic!("Can not bind to {}", &cfg.http_service.addr))
     .run();
     info!("listen to {}", &cfg.http_service.addr);
