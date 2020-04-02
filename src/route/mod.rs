@@ -30,7 +30,6 @@ pub async fn run(cfg: &Config) {
     let listener = TcpBuilder::new_v4().unwrap();
     listener.reuse_port(true).unwrap();
     listener.bind(&cfg.http_service.addr.clone()).unwrap();
-    listener.listen(cfg.http_service.http_worker.try_into().unwrap()).unwrap();
     HttpServer::new(move || {
         App::new()
             .wrap(Moni::new())
