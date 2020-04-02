@@ -8,6 +8,7 @@ use std::time;
 
 use actix_http::KeepAlive;
 use actix_web::{http::header::ContentEncoding, middleware::Compress, web, App, HttpServer};
+use net2::{unix::UnixTcpBuilderExt, TcpBuilder};
 use moni_middleware::Moni;
 use storage::{DiskMetric, LazygcServer, Storage};
 
@@ -26,7 +27,10 @@ pub async fn run(cfg: &Config) {
     lazygc_backend.start().unwrap();
     cibo_util::metrics::monitor_threads("greenhouse")
         .unwrap_or_else(|e| crit!("failed to start monitor thread: {}", e));
-
+    let listener = TcpBuilder::new_v4().unwrap();
+    listener.reuse_port(true).unwrap();
+    listener.bind(&cfg.http_service.addr.clone()).unwrap();
+    listener.listen(cfg.http_service.http_worker.try_into().unwrap()).unwrap();
     HttpServer::new(move || {
         App::new()
             .wrap(Moni::new())
@@ -44,7 +48,7 @@ pub async fn run(cfg: &Config) {
     .keep_alive(KeepAlive::Timeout(
         cfg.http_service.keepalive.as_secs().try_into().unwrap(),
     ))
-    .bind(&cfg.http_service.addr.clone())
+    .listen(listener.to_tcp_listener().unwrap())
     .unwrap_or_else(|_| panic!("Can not bind to {}", &cfg.http_service.addr))
     .run();
     info!("listen to {}", &cfg.http_service.addr);
