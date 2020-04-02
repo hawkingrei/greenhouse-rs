@@ -28,6 +28,7 @@ pub async fn run(cfg: &Config) {
     cibo_util::metrics::monitor_threads("greenhouse")
         .unwrap_or_else(|e| crit!("failed to start monitor thread: {}", e));
     let listener = TcpBuilder::new_v4().unwrap();
+    listener.reuse_address(true).unwrap();
     listener.reuse_port(true).unwrap();
     listener.bind(&cfg.http_service.addr.clone()).unwrap();
     HttpServer::new(move || {
