@@ -91,6 +91,15 @@ impl Storage {
         }
     }
 
+    pub async fn delete(
+        &self,
+        path: impl AsRef<Path> + std::marker::Send + 'static,
+    ) -> io::Result<()> {
+        let p = self.basic_path.join(path);
+        fs::remove_file(p).await?;
+        Ok(())
+    }
+
     pub async fn write(
         &self,
         data: Vec<u8>,
