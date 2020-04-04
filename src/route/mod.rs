@@ -13,7 +13,7 @@ use storage::{DiskMetric, LazygcServer, Storage};
 
 use crate::config::Config;
 use crate::route::metric::metric;
-use crate::route::storage_handle::{read, write};
+use crate::route::storage_handle::{delete, read, write};
 
 pub async fn run(cfg: &Config) {
     let sys = actix_rt::System::new("greenhouse");
@@ -35,7 +35,8 @@ pub async fn run(cfg: &Config) {
             .service(
                 web::resource("/{tail:.*}")
                     .route(web::get().to(read))
-                    .route(web::put().to(write)),
+                    .route(web::put().to(write))
+                    .route(web::delete().to(delete)),
             )
     })
     .workers(cfg.http_service.http_worker)
