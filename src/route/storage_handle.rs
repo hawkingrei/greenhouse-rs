@@ -4,6 +4,15 @@ use actix_web::{web, Error, HttpRequest, HttpResponse};
 use futures::StreamExt;
 use storage::Storage;
 
+pub async fn delete<'a>(req: HttpRequest, storage: web::Data<Arc<Storage>>) -> HttpResponse {
+    let mut url = req.uri().to_string();
+    url.remove(0);
+    let data = storage.delete(url).await;
+    match data {
+        Ok(()) => HttpResponse::Ok().content_type("text/plain").finish(),
+        Err(e) => HttpResponse::BadRequest().body(e.to_string()),
+    }
+}
 pub async fn read<'a>(req: HttpRequest, storage: web::Data<Arc<Storage>>) -> HttpResponse {
     let mut url = req.uri().to_string();
     url.remove(0);

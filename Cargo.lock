@@ -905,6 +905,7 @@ dependencies = [
  "lazy_static 1.4.0",
  "libc",
  "moni_middleware",
+ "net2",
  "panic_hook",
  "prometheus",
  "serde",
