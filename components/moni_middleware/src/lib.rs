@@ -22,7 +22,6 @@ use actix_web::{
 };
 use bytes::Bytes;
 use futures::future::{ok, Ready};
-use time;
 
 use crate::metrics::*;
 

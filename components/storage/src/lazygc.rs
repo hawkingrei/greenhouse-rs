@@ -130,12 +130,12 @@ impl LazygcServer {
         min_percent_block_free: f64,
         stop_percent_block: f64,
     ) -> LazygcServer {
-        return LazygcServer {
+        LazygcServer {
             lazygc_handle: None,
             path,
             min_percent_block_free,
             stop_percent_block,
-        };
+        }
     }
 
     pub fn start(&mut self) -> Result<(), io::Error> {
