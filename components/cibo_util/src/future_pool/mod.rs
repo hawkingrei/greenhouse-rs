@@ -173,7 +173,7 @@ pub struct ErrorPoolFull {
 
 impl std::fmt::Display for ErrorPoolFull {
     fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(fmt, "{} {}", self.name, self.description())
+        write!(fmt, "{} {}", self.name, self)
     }
 }
 

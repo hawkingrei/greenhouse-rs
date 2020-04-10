@@ -10,7 +10,7 @@ use std::time;
 use actix_http::KeepAlive;
 use actix_web::{http::header::ContentEncoding, middleware::Compress, web, App, HttpServer};
 use moni_middleware::Moni;
-use net2::{unix::UnixTcpBuilderExt, TcpBuilder};
+use net2::TcpBuilder;
 use storage::{DiskMetric, LazygcServer, Storage};
 
 use crate::config::Config;
