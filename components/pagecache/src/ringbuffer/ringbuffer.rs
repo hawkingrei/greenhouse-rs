@@ -44,14 +44,12 @@ impl RingBuffer {
                         self.buffer.as_mut_ptr(),
                         index + 8 - RINGBUFFER_SIZE,
                     );
-
                 } else {
                     let dst = self.buffer.as_mut_ptr().offset(index as isize);
-                     std::ptr::copy_nonoverlapping(length.as_ptr(), dst, 8);
-
+                    std::ptr::copy_nonoverlapping(length.as_ptr(), dst, 8);
                 }
             }
-            index = (index +8) % RINGBUFFER_SIZE;
+            index = (index + 8) % RINGBUFFER_SIZE;
 
             let length = usize::to_le_bytes(data.len());
             let (_, right) = self.buffer.split_at_mut(index);
