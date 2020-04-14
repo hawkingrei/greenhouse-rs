@@ -1,5 +1,3 @@
-#[macro_use(slog_error, slog_info)]
-extern crate slog;
 #[macro_use]
 extern crate slog_global;
 
