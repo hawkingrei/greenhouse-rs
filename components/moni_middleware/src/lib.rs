@@ -1,5 +1,3 @@
-#[macro_use(slog_info)]
-extern crate slog;
 #[macro_use]
 extern crate slog_global;
 #[macro_use]
@@ -22,7 +20,6 @@ use actix_web::{
 };
 use bytes::Bytes;
 use futures::future::{ok, Ready};
-use time;
 
 use crate::metrics::*;
 

@@ -1,4 +1,3 @@
-use serde_json;
 use std::io;
 
 /// Writes file name into the writer, removes the character which not match `[a-zA-Z0-9\.-_]`

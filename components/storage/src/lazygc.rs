@@ -69,7 +69,9 @@ impl Lazygc {
                 self.get();
                 for (key, _) in self.entry_map.iter() {
                     info!("rm file"; "file" => &key.path.to_str());
-                    std::fs::remove_file(&key.path);
+                    if let Err(e) = std::fs::remove_file(&key.path) {
+                        error!("file to rm file"; "file" => &key.path.to_str(),"err" => e.to_string());
+                    }
                 }
                 self.entry_map.clear();
             }
@@ -130,12 +132,12 @@ impl LazygcServer {
         min_percent_block_free: f64,
         stop_percent_block: f64,
     ) -> LazygcServer {
-        return LazygcServer {
+        LazygcServer {
             lazygc_handle: None,
             path,
             min_percent_block_free,
             stop_percent_block,
-        };
+        }
     }
 
     pub fn start(&mut self) -> Result<(), io::Error> {

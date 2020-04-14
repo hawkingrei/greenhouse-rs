@@ -10,7 +10,7 @@ use std::time;
 use actix_http::KeepAlive;
 use actix_web::{http::header::ContentEncoding, middleware::Compress, web, App, HttpServer};
 use moni_middleware::Moni;
-use net2::{unix::UnixTcpBuilderExt, TcpBuilder};
+use net2::TcpBuilder;
 use storage::{DiskMetric, LazygcServer, Storage};
 
 use crate::config::Config;
@@ -30,7 +30,7 @@ fn unused_addr(address: String) -> net::SocketAddr {
 pub async fn run(cfg: &Config) {
     let sys = actix_rt::System::new("greenhouse");
     let storage_config = cfg.storage.clone();
-    let pathbuf = Path::new(&storage_config.cache_dir.clone()).to_path_buf();
+    let pathbuf = Path::new(&storage_config.cache_dir).to_path_buf();
     let ten_millis = time::Duration::from_secs(2);
     let mut metric_backend = DiskMetric::new(ten_millis, pathbuf.clone());
     let mut lazygc_backend = LazygcServer::new(pathbuf.clone(), 0.8, 0.6);

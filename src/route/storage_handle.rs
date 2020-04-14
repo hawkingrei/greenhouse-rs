@@ -17,10 +17,12 @@ pub async fn read<'a>(req: HttpRequest, storage: web::Data<Arc<Storage>>) -> Htt
     let mut url = req.uri().to_string();
     url.remove(0);
     let data = storage.read(url).await;
-    if let Ok(result) = data {
-        HttpResponse::Ok().content_type("text/plain").body(result)
-    } else {
-        HttpResponse::NotFound().finish()
+    match data {
+        Ok(result) => HttpResponse::Ok().content_type("text/plain").body(result),
+        Err(e) => {
+            error!("fail to read";"err" => e.to_string(),"url" => req.uri().to_string());
+            HttpResponse::NotFound().finish()
+        }
     }
 }
 
