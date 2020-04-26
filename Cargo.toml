@@ -11,7 +11,7 @@ tcmalloc = ["tikv_alloc/tcmalloc"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
 actix-http = "1"
-actix-rt = "1"
+actix-rt = "<=1.0.0"
 actix-web = "2"
 async-std = "1"
 bytes = "0.4"
