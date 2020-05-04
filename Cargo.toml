@@ -5,13 +5,13 @@ authors = ["wangweizhen <wangweizhen@bilibili.com>"]
 edition = "2018"
 
 [features]
-default = ["tikv_alloc/jemalloc"]
-tcmalloc = ["tikv_alloc/tcmalloc"]
+default = ["tikv_alloc/tcmalloc"]
+jemalloc = ["tikv_alloc/jemalloc"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
 actix-http = "1"
-actix-rt = "<=1.0.0"
+actix-rt = "1"
 actix-web = "2"
 async-std = "1"
 bytes = "0.4"
