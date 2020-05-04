@@ -1,3 +1,4 @@
 pub mod align_buffer;
 pub mod cache_padded;
-mod ptr;
+pub mod ptr;
+pub mod message;

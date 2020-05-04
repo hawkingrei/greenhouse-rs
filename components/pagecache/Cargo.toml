@@ -12,3 +12,5 @@ io_uring = ["liburing"]
 [dependencies]
 liburing = { version = "0.0.2", optional = true }
 libc = "0.2.66" 
+bytes = "0.5.4"
+snap = "1.0.0"
