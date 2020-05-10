@@ -43,7 +43,7 @@ pub async fn run(cfg: &Config) {
         App::new()
             .wrap(Moni::new())
             .wrap(Compress::new(ContentEncoding::Gzip))
-            .data(Arc::new(Storage::new(storage_config.clone())))
+            .data(Storage::new(storage_config.clone()))
             .service(
                 web::resource("/{tail:.*}")
                     .route(web::get().to(read))
