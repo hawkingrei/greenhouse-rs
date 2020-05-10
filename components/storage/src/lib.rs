@@ -113,7 +113,7 @@ impl Storage {
             if fs::metadata(p_parent).await.is_err() {
                 fs::create_dir_all(p_parent).await?;
             }
-            let mut e = ZstdEncoder::new(Vec::new(), 7);
+            let mut e = ZstdEncoder::new(Vec::new(), 3);
             e.write_all(&data).await?;
             e.flush().await?;
             e.close().await?;
