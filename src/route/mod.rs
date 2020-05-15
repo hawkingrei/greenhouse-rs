@@ -4,7 +4,6 @@ mod storage_handle;
 use std::convert::TryInto;
 use std::net;
 use std::path::Path;
-use std::sync::Arc;
 use std::time;
 
 use actix_http::KeepAlive;
@@ -43,7 +42,7 @@ pub async fn run(cfg: &Config) {
         App::new()
             .wrap(Moni::new())
             .wrap(Compress::new(ContentEncoding::Gzip))
-            .data(Storage::new(storage_config.clone()))
+            .app_data(Storage::new(storage_config.clone()))
             .service(
                 web::resource("/{tail:.*}")
                     .route(web::get().to(read))

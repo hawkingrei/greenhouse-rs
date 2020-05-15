@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use actix_web::{web, Error, HttpRequest, HttpResponse};
 use futures::StreamExt;
 use storage::Storage;
