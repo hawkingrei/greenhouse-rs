@@ -5,8 +5,8 @@ authors = ["wangweizhen <wangweizhen@bilibili.com>"]
 edition = "2018"
 
 [features]
-default = ["tikv_alloc/tcmalloc"]
-jemalloc = ["tikv_alloc/jemalloc"]
+default = ["tikv_alloc/jemalloc"]
+tcmalloc = ["tikv_alloc/tcmalloc"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
