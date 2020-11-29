@@ -165,15 +165,20 @@ where
     }
 }
 
+use pin_project::{pin_project, pinned_drop};
+
+#[pin_project(PinnedDrop)]
 pub struct MoniLog<B> {
+    #[pin]
     body: ResponseBody<B>,
     info: Option<Info>,
     size: usize,
     time: time::Tm,
 }
 
-impl<B> Drop for MoniLog<B> {
-    fn drop(&mut self) {
+#[pinned_drop]
+impl<B> PinnedDrop for MoniLog<B> {
+    fn drop(self: Pin<&mut Self>) {
         if let Some(ref info) = self.info {
             if info.method == Method::GET {
                 GREENHOUSE_READING_COUNT.inc();
@@ -218,10 +223,11 @@ impl<B: MessageBody> MessageBody for MoniLog<B> {
         self.body.size()
     }
 
-    fn poll_next(&mut self, cx: &mut Context<'_>) -> Poll<Option<Result<Bytes, Error>>> {
-        match self.body.poll_next(cx) {
+    fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Result<Bytes, Error>>> {
+        let this = self.project();
+        match this.body.poll_next(cx) {
             Poll::Ready(Some(Ok(chunk))) => {
-                self.size += chunk.len();
+                *this.size += chunk.len();
                 Poll::Ready(Some(Ok(chunk)))
             }
             val => val,
