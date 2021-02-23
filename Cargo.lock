@@ -725,6 +725,7 @@ dependencies = [
  "openssl",
  "panic_hook",
  "pin-project 0.4.27",
+ "procfs",
  "procinfo",
  "prometheus 0.10.0",
  "quick-error",
@@ -2388,6 +2389,7 @@ checksum = "c434e93ef69c216e68e4f417c927b4f31502c3560b72cfdb6827e2321c5c6b3e"
 dependencies = [
  "bitflags",
  "byteorder",
+ "chrono",
  "hex",
  "lazy_static 1.4.0",
  "libc",
@@ -2397,7 +2399,7 @@ dependencies = [
 [[package]]
 name = "procinfo"
 version = "0.4.2"
-source = "git+https://github.com/tikv/procinfo-rs#309c751b31e644c318ff7c33cda015d43e39ec52"
+source = "git+https://github.com/tikv/procinfo-rs?rev=5125fc1a69496b73b26b3c08b6e8afc3c665a56e#5125fc1a69496b73b26b3c08b6e8afc3c665a56e"
 dependencies = [
  "byteorder",
  "libc",
