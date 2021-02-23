@@ -37,7 +37,7 @@ threadpool = { path = "components/threadpool" }
 tikv_alloc = { path = "components/tikv_alloc" }
 tokio = { version = "0.2", features = ["full"] }
 toml = "0.5"
-zstd = { version = "0.5.1", features = ["tokio"] }
+zstd = { version = "0.5", features = ["tokio"] }
 
 [dev-dependencies]
 panic_hook = { path = "components/panic_hook" }
