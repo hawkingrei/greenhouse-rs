@@ -15,7 +15,6 @@ pub fn monitor_threads<S: Into<String>>(_: S) -> io::Result<()> {
     Ok(())
 }
 
-#[derive(Default)]
 pub struct ThreadInfoStatistics {}
 
 impl ThreadInfoStatistics {
