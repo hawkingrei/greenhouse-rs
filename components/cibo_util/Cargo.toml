@@ -19,6 +19,7 @@ libc = "0.2.54"
 log = { version = "0.4", features = ["max_level_trace", "release_max_level_debug"] }
 openssl = { version = "0.10" }
 pin-project = "0.4"
+prometheus = { version = "0.10", features = ["nightly"] }
 quick-error = "1.2.2"
 rand = "0.7"
 regex = "1.0"
@@ -40,11 +41,6 @@ utime = "0.2"
 
 [dev-dependencies]
 panic_hook = { path = "../panic_hook" }
-
-[dependencies.prometheus]
-git = "https://github.com/pingcap/rust-prometheus.git"
-rev = "d919ccd35976b9b84b8d03c07138c1cc05a36087"
-features = ["nightly", "push", "process"]
 
 [target.'cfg(target_os = "linux")'.dependencies]
 procinfo = { git = "https://github.com/tikv/procinfo-rs" }

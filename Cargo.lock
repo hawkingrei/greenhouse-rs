@@ -726,7 +726,7 @@ dependencies = [
  "panic_hook",
  "pin-project 0.4.27",
  "procinfo",
- "prometheus",
+ "prometheus 0.10.0",
  "quick-error",
  "rand 0.7.3",
  "regex",
@@ -1101,7 +1101,7 @@ dependencies = [
  "moni_middleware",
  "net2",
  "panic_hook",
- "prometheus",
+ "prometheus 0.10.0",
  "serde",
  "serde_derive",
  "serde_json",
@@ -2039,7 +2039,7 @@ dependencies = [
  "futures 0.3.13",
  "lazy_static 1.4.0",
  "pin-project 1.0.5",
- "prometheus",
+ "prometheus 0.8.0",
  "slog",
  "slog-global",
  "time 0.1.43",
@@ -2418,6 +2418,22 @@ dependencies = [
  "protobuf",
  "reqwest",
  "spin",
+ "thiserror",
+]
+
+[[package]]
+name = "prometheus"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "30d70cf4412832bcac9cffe27906f4a66e450d323525e977168c70d1b36120ae"
+dependencies = [
+ "cfg-if 0.1.10",
+ "fnv",
+ "lazy_static 1.4.0",
+ "libc",
+ "parking_lot 0.11.1",
+ "protobuf",
+ "regex",
  "thiserror",
 ]
 
@@ -3151,7 +3167,7 @@ dependencies = [
  "futures 0.3.13",
  "lazy_static 1.4.0",
  "libc",
- "prometheus",
+ "prometheus 0.8.0",
  "quick-error",
  "same-file",
  "serde",
