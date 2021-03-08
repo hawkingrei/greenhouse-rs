@@ -20,13 +20,18 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread;
 
 #[macro_use]
+pub mod log;
+#[macro_use]
 pub mod macros;
+pub mod codec;
 pub mod collections;
 pub mod config;
 pub mod file;
 pub mod future_pool;
+pub mod keybuilder;
 pub mod logger;
 pub mod metrics;
+pub mod stream;
 pub mod time;
 pub mod worker;
 
@@ -118,7 +123,7 @@ pub fn set_panic_hook(panic_abort: bool, data_dir: &str) {
         // There might be remaining logs in the async logger.
         // To collect remaining logs and also collect future logs, replace the old one with a
         // terminal logger.
-        if let Some(level) = log::max_level().to_level() {
+        if let Some(level) = ::log::max_level().to_level() {
             let drainer = logger::term_drainer();
             let _ = logger::init_log(
                 drainer,
