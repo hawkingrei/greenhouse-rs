@@ -1,0 +1,27 @@
+[package]
+name = "engine_traits"
+version = "0.0.1"
+edition = "2018"
+publish = false
+
+[features]
+protobuf-codec = [
+  "raft/protobuf-codec",
+  "kvproto/protobuf-codec",
+]
+prost-codec = [
+  "raft/prost-codec",
+  "kvproto/prost-codec",
+]
+
+[dependencies]
+error_code = { path = "../error_code" }
+log_wrappers = { path = "../log_wrappers" }
+protobuf = "2"
+quick-error = "1.2.3"
+tikv_alloc = { path = "../tikv_alloc" }
+cibo_util = { path = "../cibo_util" }
+slog = { version = "2.3", features = ["max_level_trace", "release_max_level_debug"] }
+slog-global = { version = "0.1", git = "https://github.com/breeswish/slog-global.git", rev = "d592f88e4dbba5eb439998463054f1a44fbf17b9" }
+kvproto = { path = "../kvproto", default-features = false }
+raft = { version = "0.6.0-alpha", default-features = false }

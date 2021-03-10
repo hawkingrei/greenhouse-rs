@@ -17,10 +17,10 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::thread;
 
-use async_compression::futures::write::{ZstdDecoder, ZstdEncoder};
 use futures::AsyncWriteExt;
 use threadpool::{Priority, ThreadPool};
 use tokio::{fs, fs::File, io, prelude::*};
+use zstd;
 
 use crate::config::StorageConfig;
 pub use crate::lazygc::Lazygc;
@@ -76,11 +76,13 @@ impl Storage {
         let future_fn = async move || -> io::Result<Vec<u8>> {
             let timer = STORAGE_READ_DURATION_SECONDS_HISTOGRAM_VEC.start_timer();
             let f = fs::read(p).await?;
-            let mut e = ZstdDecoder::new(Vec::new());
-            e.write_all(&f).await?;
-            e.flush().await?;
+            let mut read_data = vec![];
+            match zstd::stream::copy_decode(&mut &*f.as_slice(), &mut read_data) {
+                Ok(()) => (),
+                Err(e) => return Err(io::Error::new(io::ErrorKind::WouldBlock, e)),
+            }
             timer.observe_duration();
-            Ok(e.into_inner())
+            Ok(read_data)
         };
         match self.reading_pool.spawn(future_fn(), priority) {
             Ok(middle) => match middle.await {
@@ -113,12 +115,10 @@ impl Storage {
             if fs::metadata(p_parent).await.is_err() {
                 fs::create_dir_all(p_parent).await?;
             }
-            let mut e = ZstdEncoder::new(Vec::new(), 3);
-            e.write_all(&data).await?;
-            e.flush().await?;
-            e.close().await?;
+            let mut raw_compressed_data: Vec<u8> = vec![];
+            zstd::stream::copy_encode(&mut &*data, &mut raw_compressed_data, 3).unwrap();
             let mut file = File::create(p).await?;
-            file.write_all(&e.into_inner()).await?;
+            file.write_all(&raw_compressed_data).await?;
             timer.observe_duration();
             Ok(())
         };
