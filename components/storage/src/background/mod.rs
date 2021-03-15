@@ -1,4 +1,3 @@
-use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -8,6 +7,7 @@ use crossbeam::queue::ArrayQueue;
 use tokio::runtime;
 use tokio::runtime::Runtime;
 use tokio::task::JoinHandle;
+use tokio::fs::File;
 
 use threadpool::ThreadPool;
 
@@ -57,8 +57,7 @@ impl Background {
                     if let Err(e) = write_file_task.deal_write_file().await {
                         error!("write_file_batch_error";  "error" => ?e);
                     }
-                })
-                .unwrap();
+                });
             self.workers.push(t);
         }
     }
