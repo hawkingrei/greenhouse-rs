@@ -36,8 +36,9 @@ impl Background {
         let path = PathBuf::from(&config.cache_dir);
         let writing_pool = runtime::Builder::new_current_thread()
             .enable_io()
+            .thread_name("write_file")
             .worker_threads(4)
-            .max_blocking_threads(40)
+            .max_blocking_threads(128)
             .build()
             .unwrap();
         Background {
