@@ -1,7 +1,7 @@
-use std::{fs, io};
 use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
+use std::{fs, io};
 
 use crate::WRITE_FILE_BUFFER;
 
@@ -33,17 +33,18 @@ impl WriteFileTask {
     pub fn new(basic_path: PathBuf) -> WriteFileTask {
         WriteFileTask { basic_path }
     }
-    pub fn deal_write_file(&self) -> io::Result<()> {
+
+    pub async fn deal_write_file(&self) -> io::Result<()> {
         while let Some(data) = WRITE_FILE_BUFFER.pop() {
             let p = self.basic_path.join(data.path());
             let p_parent = p.as_path().parent().unwrap();
-            if fs::metadata(p_parent).is_err() {
-                fs::create_dir_all(p_parent)?;
+            if fs::metadata(p_parent).await.is_err() {
+                fs::create_dir_all(p_parent).await?;
             }
             let mut raw_compressed_data: Vec<u8> = vec![];
             zstd::stream::copy_encode(&mut &*data.context(), &mut raw_compressed_data, 3).unwrap();
-            let mut file = File::create(p)?;
-            file.write_all(&raw_compressed_data)?;
+            let mut file = File::create(p).await?;
+            file.write_all(&raw_compressed_data).await?;
         }
         return Ok(());
     }
