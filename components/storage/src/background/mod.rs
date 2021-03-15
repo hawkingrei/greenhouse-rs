@@ -64,11 +64,6 @@ impl Background {
     }
 
     pub fn shutdown(&mut self) {
-        for h in self.workers.drain(..) {
-            debug!("waiting for {}", h.thread().name().unwrap());
-            if let Err(e) = h.join() {
-                error!("failed to join worker thread: {:?}", e);
-            }
-        }
+        for _ in self.workers.drain(..) {}
     }
 }
