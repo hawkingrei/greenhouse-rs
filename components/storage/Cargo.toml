@@ -8,7 +8,7 @@ edition = "2018"
 
 [dependencies]
 cibo_util = { path = "../cibo_util" }
-crossbeam = "0.8"
+crossbeam = "0.7"
 futures = "0.3"
 libc = "0.2"
 lazy_static = "1.3"
