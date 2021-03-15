@@ -1,5 +1,6 @@
 #![feature(async_closure)]
 #![feature(map_first_last)]
+#![recursion_limit = "128"]
 
 #[macro_use]
 extern crate cibo_util;
@@ -118,8 +119,8 @@ impl Storage {
     ) -> io::Result<()> {
         let timer = STORAGE_WRITE_DURATION_SECONDS_HISTOGRAM_VEC.start_timer();
         let wf = WriteFile::new(data, path.as_ref().to_path_buf());
-        if let Err(e) = WRITE_FILE_BUFFER.push(wf) {
-            error!("fail_to_write_file"; "error" -> ?e);
+        if let Err(_) = WRITE_FILE_BUFFER.push(wf) {
+            error!("fail_to_write_file");
             WRITE_FILE_BUFFER_OVERLIMIT.inc();
         }
         timer.observe_duration();
