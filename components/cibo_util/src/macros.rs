@@ -183,6 +183,15 @@ macro_rules! impl_display_as_debug {
     };
 }
 
+#[macro_export]
+macro_rules! stat_err {
+    ($expr:expr, $metric: expr) => {{
+        if let Err(_) = $expr {
+            $metric;
+        }
+    }};
+}
+
 #[cfg(test)]
 mod tests {
     use std::error::Error;

@@ -2,12 +2,15 @@
 #![feature(map_first_last)]
 
 #[macro_use]
-extern crate slog_global;
+extern crate cibo_util;
 #[macro_use]
 extern crate lazy_static;
 #[macro_use]
 extern crate serde_derive;
+#[macro_use]
+extern crate slog_global;
 
+mod background;
 pub mod config;
 mod lazygc;
 mod metrics;
@@ -22,6 +25,7 @@ use threadpool::{Priority, ThreadPool};
 use tokio::{fs, fs::File, io, prelude::*};
 use zstd;
 
+use crate::background::{Background, WriteFile, WRITE_FILE_BUFFER};
 use crate::config::StorageConfig;
 pub use crate::lazygc::Lazygc;
 pub use crate::lazygc::LazygcServer;
@@ -31,21 +35,25 @@ pub struct Storage {
     reading_pool: Arc<ThreadPool>,
     writing_pool: Arc<ThreadPool>,
     basic_path: PathBuf,
+    background: Background,
 
     metric_handle: Option<thread::JoinHandle<()>>,
 }
 
 impl Storage {
     pub fn new(config: StorageConfig) -> Self {
-        let path = PathBuf::from(config.cache_dir);
+        let path = PathBuf::from(&config.cache_dir);
         if !path.as_path().exists() {
             std::fs::create_dir_all(path.as_path()).unwrap();
         }
+        let mut background = Background::new(&config);
+        background.start();
         Storage {
             reading_pool: Arc::new(ThreadPool::new(config.reading_threadpool)),
             writing_pool: Arc::new(ThreadPool::new(config.writing_threadpool)),
             basic_path: path,
             metric_handle: None,
+            background,
         }
     }
 
@@ -107,34 +115,19 @@ impl Storage {
         data: Vec<u8>,
         path: impl AsRef<Path> + std::marker::Send + 'static,
     ) -> io::Result<()> {
-        let p = self.basic_path.join(path);
-        let priority = self.priority_by_size(data.len().try_into().unwrap());
-        let future_fn = async move || -> io::Result<()> {
-            let timer = STORAGE_WRITE_DURATION_SECONDS_HISTOGRAM_VEC.start_timer();
-            let p_parent = p.as_path().parent().unwrap();
-            if fs::metadata(p_parent).await.is_err() {
-                fs::create_dir_all(p_parent).await?;
-            }
-            let mut raw_compressed_data: Vec<u8> = vec![];
-            zstd::stream::copy_encode(&mut &*data, &mut raw_compressed_data, 3).unwrap();
-            let mut file = File::create(p).await?;
-            file.write_all(&raw_compressed_data).await?;
-            timer.observe_duration();
-            Ok(())
-        };
-        match self.writing_pool.spawn(future_fn(), priority) {
-            Ok(middle) => match middle.await {
-                Ok(data) => data,
-                Err(e) => Err(io::Error::new(io::ErrorKind::WouldBlock, e)),
-            },
-            Err(e) => Err(io::Error::new(io::ErrorKind::WouldBlock, e)),
-        }
+        let wf = WriteFile::new(data, path.as_ref().to_path_buf());
+        stat_err!(
+            WRITE_FILE_BUFFER.push(wf),
+            WRITE_FILE_BUFFER_OVERLIMIT.inc()
+        );
+        Ok(())
     }
 }
 
 impl Drop for Storage {
     fn drop(&mut self) {
         self.metric_handle.take();
+        self.background.shutdown();
     }
 }
 

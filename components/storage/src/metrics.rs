@@ -34,6 +34,11 @@ lazy_static! {
         "Total gb on bazel cache disk"
     ))
     .unwrap();
+    pub static ref WRITE_FILE_BUFFER_OVERLIMIT: Counter = register_counter!(opts!(
+        "greenhouse_write_file_buffer_overlimit",
+        "greenhouse_write_file_buffer_overlimit"
+    ))
+    .unwrap();
 }
 
 pub fn get_disk_usage<P: AsRef<Path>>(path: P) -> Option<(f64, u64, u64)> {
