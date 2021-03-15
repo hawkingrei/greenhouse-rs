@@ -4,11 +4,11 @@ use std::sync::Arc;
 use std::{io, thread};
 
 use crossbeam::queue::ArrayQueue;
+use tokio::fs;
+use tokio::fs::File;
 use tokio::runtime;
 use tokio::runtime::Runtime;
 use tokio::task::JoinHandle;
-use tokio::fs::File;
-use tokio::fs;
 
 use threadpool::ThreadPool;
 
@@ -50,15 +50,14 @@ impl Background {
     }
 
     pub fn start_write_file(&mut self) {
-        for n in 0..8 {
+        for _ in 0..8 {
             let write_file_task = WriteFileTask::new(self.basic_path.clone());
-            let t = self
-                .writing_pool
-                .spawn(async move || loop {
-                    if let Err(e) = write_file_task.deal_write_file().await {
-                        error!("write_file_batch_error";  "error" => ?e);
-                    }
-                });
+            let t = self.writing_pool.spawn(async move {
+
+                if let Err(e) = write_file_task.deal_write_file().await {
+                    error!("write_file_batch_error";  "error" => ?e);
+                }
+            });
             self.workers.push(t);
         }
     }
