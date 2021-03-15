@@ -115,11 +115,13 @@ impl Storage {
         data: Vec<u8>,
         path: impl AsRef<Path> + std::marker::Send + 'static,
     ) -> io::Result<()> {
+        let timer = STORAGE_WRITE_DURATION_SECONDS_HISTOGRAM_VEC.start_timer();
         let wf = WriteFile::new(data, path.as_ref().to_path_buf());
         stat_err!(
             WRITE_FILE_BUFFER.push(wf),
             WRITE_FILE_BUFFER_OVERLIMIT.inc()
         );
+        timer.observe_duration();
         Ok(())
     }
 }
