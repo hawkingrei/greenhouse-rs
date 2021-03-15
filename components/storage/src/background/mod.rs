@@ -46,6 +46,7 @@ impl Background {
                     if let Err(e) = write_file_task.deal_write_file(){
                         error!("write_file_batch_error";  "error" => ?e);
                     }
+                    thread::yield_now();
                 })
                 .unwrap();
             self.workers.push(t);
