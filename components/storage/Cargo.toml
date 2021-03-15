@@ -7,6 +7,8 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+cibo_util = { path = "../cibo_util" }
+crossbeam = "0.8"
 futures = "0.3"
 libc = "0.2"
 lazy_static = "1.3"
