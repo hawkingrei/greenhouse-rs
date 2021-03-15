@@ -35,6 +35,7 @@ impl Background {
     pub fn new(config: &StorageConfig) -> Background {
         let path = PathBuf::from(&config.cache_dir);
         let writing_pool = runtime::Builder::new()
+            .worker_threads(4)
             .threaded_scheduler()
             .build()
             .unwrap();
