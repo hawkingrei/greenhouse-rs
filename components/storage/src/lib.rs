@@ -10,26 +10,27 @@ extern crate serde_derive;
 #[macro_use]
 extern crate slog_global;
 
-mod background;
-pub mod config;
-mod lazygc;
-mod metrics;
-
 use std::convert::TryInto;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::thread;
 
 use futures::AsyncWriteExt;
-use threadpool::{Priority, ThreadPool};
-use tokio::{fs, fs::File, io, prelude::*};
+use tokio::{fs, fs::File, io};
 use zstd;
 
-use crate::background::{Background, WriteFile, WRITE_FILE_BUFFER};
+use threadpool::{Priority, ThreadPool};
+
+use crate::background::{Background, WRITE_FILE_BUFFER, WriteFile};
 use crate::config::StorageConfig;
 pub use crate::lazygc::Lazygc;
 pub use crate::lazygc::LazygcServer;
 pub use crate::metrics::*;
+
+mod background;
+pub mod config;
+mod lazygc;
+mod metrics;
 
 pub struct Storage {
     reading_pool: Arc<ThreadPool>,
