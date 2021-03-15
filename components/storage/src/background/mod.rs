@@ -53,9 +53,10 @@ impl Background {
         for _ in 0..8 {
             let write_file_task = WriteFileTask::new(self.basic_path.clone());
             let t = self.writing_pool.spawn(async move {
-
-                if let Err(e) = write_file_task.deal_write_file().await {
-                    error!("write_file_batch_error";  "error" => ?e);
+                loop {
+                    if let Err(e) = write_file_task.deal_write_file().await {
+                        error!("write_file_batch_error";  "error" => ?e);
+                    }
                 }
             });
             self.workers.push(t);
