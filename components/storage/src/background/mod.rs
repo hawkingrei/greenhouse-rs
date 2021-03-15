@@ -1,13 +1,14 @@
 use std::io::Write;
 use std::path::PathBuf;
 use std::sync::Arc;
-use std::{fs, io, thread};
+use std::{io, thread};
 
 use crossbeam::queue::ArrayQueue;
 use tokio::runtime;
 use tokio::runtime::Runtime;
 use tokio::task::JoinHandle;
 use tokio::fs::File;
+use tokio::fs;
 
 use threadpool::ThreadPool;
 
