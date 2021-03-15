@@ -60,7 +60,6 @@ impl Background {
                     if let Err(e) = write_file_task.deal_write_file().await {
                         error!("write_file_batch_error";  "error" => ?e);
                     }
-                    tokio::task::yield_now().await;
                 }
             });
             self.workers.push(t);
