@@ -25,6 +25,6 @@ slog-json = "2.3"
 slog-term = "2.4"
 slog_derive = "0.1"
 threadpool = { path = "../threadpool" }
-tokio = { version = "1.3", features = ["full"] }
+tokio = { version = "0.2", features = ["full"] }
 walkdir = "2.3"
 zstd = "0.6.1+zstd.1.4.9"

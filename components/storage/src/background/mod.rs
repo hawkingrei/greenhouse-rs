@@ -34,11 +34,11 @@ pub struct Background {
 impl Background {
     pub fn new(config: &StorageConfig) -> Background {
         let path = PathBuf::from(&config.cache_dir);
-        let writing_pool = runtime::Builder::new_current_thread()
-            .enable_io()
+        let writing_pool = runtime::Builder::new()
+            .basic_scheduler()
             .thread_name("write_file")
-            .worker_threads(4)
-            .max_blocking_threads(128)
+            .core_threads(4)
+            .max_threads(128)
             .build()
             .unwrap();
         Background {
