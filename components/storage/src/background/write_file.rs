@@ -1,7 +1,8 @@
-use std::{fs, io};
+use core::arch::x86_64::_mm_pause;
 use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
+use std::{fs, io};
 
 use crate::WRITE_FILE_BUFFER;
 
@@ -34,7 +35,7 @@ impl WriteFileTask {
         WriteFileTask { basic_path }
     }
     pub fn deal_write_file(&self) -> io::Result<()> {
-        while let Some(data) = WRITE_FILE_BUFFER.pop() {
+        while let Ok(data) = WRITE_FILE_BUFFER.pop() {
             let p = self.basic_path.join(data.path());
             let p_parent = p.as_path().parent().unwrap();
             if fs::metadata(p_parent).is_err() {
@@ -44,6 +45,9 @@ impl WriteFileTask {
             zstd::stream::copy_encode(&mut &*data.context(), &mut raw_compressed_data, 3).unwrap();
             let mut file = File::create(p)?;
             file.write_all(&raw_compressed_data)?;
+            unsafe {
+                _mm_pause();
+            }
         }
         return Ok(());
     }

@@ -15,6 +15,7 @@ use storage::{DiskMetric, LazygcServer, Storage};
 use crate::config::Config;
 use crate::route::metric::metric;
 use crate::route::storage_handle::{delete, read, write};
+use std::sync::Arc;
 
 #[inline]
 fn unused_addr(address: String) -> net::SocketAddr {
@@ -38,11 +39,12 @@ pub async fn run(cfg: &Config) {
     cibo_util::metrics::monitor_threads("greenhouse")
         .unwrap_or_else(|e| crit!("failed to start monitor thread: {}", e));
     let listener = unused_addr(cfg.http_service.addr.clone());
+    let storage = Arc::new(Storage::new(storage_config.clone()));
     HttpServer::new(move || {
         App::new()
             .wrap(Moni::new())
             .wrap(Compress::new(ContentEncoding::Gzip))
-            .data(Storage::new(storage_config.clone()))
+            .data(storage.clone())
             .service(
                 web::resource("/{tail:.*}")
                     .route(web::get().to(read))
