@@ -7,7 +7,7 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-async-compression = {version = "0.2.0", features = ["futures-write","gzip", "deflate", "brotli", "zstd"] }
+async-compression = {version = "0.3", features = ["futures-write","gzip", "deflate", "brotli", "zstd"] }
 futures = "0.3"
 libc = "0.2"
 lazy_static = "1.3"
