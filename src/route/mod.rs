@@ -5,9 +5,12 @@ use std::convert::TryInto;
 use std::net;
 use std::path::Path;
 use std::time;
+use std::thread;
+use std::time::Duration;
+use std::sync::mpsc;
 
-use actix_http::KeepAlive;
-use actix_web::{http::header::ContentEncoding, middleware::Compress, web, App, HttpServer};
+use actix_web::{web, rt, App, HttpServer,dev::ServerHandle};
+use actix_web::web::Data;
 use moni_middleware::Moni;
 use net2::TcpBuilder;
 use storage::{DiskMetric, LazygcServer, Storage};
@@ -26,23 +29,16 @@ fn unused_addr(address: String) -> net::SocketAddr {
     tcp.local_addr().unwrap()
 }
 
-pub async fn run(cfg: &Config) {
-    let sys = actix_rt::System::new("greenhouse");
+async fn run_app(tx: mpsc::Sender<ServerHandle>, cfg: &Config) -> std::io::Result<()> {
+    info!("listen to {}", &cfg.http_service.addr);
     let storage_config = cfg.storage.clone();
-    let pathbuf = Path::new(&storage_config.cache_dir).to_path_buf();
-    let ten_millis = time::Duration::from_secs(2);
-    let mut metric_backend = DiskMetric::new(ten_millis, pathbuf.clone());
-    let mut lazygc_backend = LazygcServer::new(pathbuf.clone(), 0.8, 0.6);
-    metric_backend.start().unwrap();
-    lazygc_backend.start().unwrap();
-    cibo_util::metrics::monitor_threads("greenhouse")
-        .unwrap_or_else(|e| crit!("failed to start monitor thread: {}", e));
+
+    // srv is server controller type, `dev::Server`
     let listener = unused_addr(cfg.http_service.addr.clone());
-    HttpServer::new(move || {
+    let server = HttpServer::new(move || {
         App::new()
             .wrap(Moni::new())
-            .wrap(Compress::new(ContentEncoding::Gzip))
-            .data(Storage::new(storage_config.clone()))
+            .app_data(Data::new(Storage::new(storage_config.clone())))
             .service(
                 web::resource("/{tail:.*}")
                     .route(web::get().to(read))
@@ -51,20 +47,47 @@ pub async fn run(cfg: &Config) {
             )
     })
     .workers(cfg.http_service.http_worker)
-    .client_timeout(cfg.http_service.client_timeout.as_millis())
-    .client_shutdown(cfg.http_service.client_shutdown.as_millis())
-    .keep_alive(KeepAlive::Timeout(
-        cfg.http_service.keepalive.as_secs().try_into().unwrap(),
-    ))
+    .client_request_timeout(Duration::from_millis( cfg.http_service.client_timeout.as_millis()))
+    .client_disconnect_timeout(Duration::from_millis( cfg.http_service.client_shutdown.as_millis()))
+    .keep_alive(
+        Duration::from_secs(cfg.http_service.keepalive.as_secs().try_into().unwrap()),
+    )
     .bind(format!("{}", listener))
     .unwrap_or_else(|_| panic!("Can not bind to {}", &cfg.http_service.addr))
     .run();
-    info!("listen to {}", &cfg.http_service.addr);
+    let _ = tx.send(server.handle());
+    server.await
+}
 
-    HttpServer::new(move || App::new().route("/prometheus", web::get().to(metric)))
-        .workers(1)
-        .bind(&cfg.metric.address.clone())
-        .unwrap_or_else(|_| panic!("Can not bind to {}", &cfg.metric.address))
-        .run();
-    sys.run().expect("Fail to run");
+async fn run_metrics(metric_address :String) -> std::io::Result<()> {
+    let server =  HttpServer::new(move || App::new().route("/prometheus", web::get().to(metric)))
+    .workers(1)
+    .bind(metric_address.clone())
+    .unwrap_or_else(move |_| panic!("Can not bind to {}", metric_address))
+    .run();
+    server.await
+}
+
+pub async fn run(cfg: Config) {
+    let storage_config = cfg.storage.clone();
+    let pathbuf = Path::new(&storage_config.cache_dir).to_path_buf();
+    let ten_millis = time::Duration::from_secs(2);
+    let mut metric_backend = DiskMetric::new(ten_millis, pathbuf.clone());
+    let mut lazygc_backend = LazygcServer::new(pathbuf.clone(), 0.8, 0.6);
+    let metric_address = cfg.metric.address.clone();
+    metric_backend.start().unwrap();
+    lazygc_backend.start().unwrap();
+    cibo_util::metrics::monitor_threads("greenhouse")
+        .unwrap_or_else(|e| crit!("failed to start monitor thread: {}", e));
+    let (tx, rx) = mpsc::channel();
+    thread::spawn(move || {
+        let server_future = run_metrics(metric_address.clone());
+        rt::System::new().block_on(server_future)
+    });
+    thread::spawn(move || {
+        let server_future = run_app(tx, &cfg);
+        rt::System::new().block_on(server_future)
+    });   
+    let server_handle = rx.recv().unwrap();
+    rt::System::new().block_on(server_handle.stop(true));
 }
