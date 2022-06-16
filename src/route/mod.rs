@@ -55,7 +55,6 @@ async fn run_app(tx: mpsc::Sender<ServerHandle>, cfg: &Config) -> std::io::Resul
     .bind(format!("{}", listener))
     .unwrap_or_else(|_| panic!("Can not bind to {}", &cfg.http_service.addr))
     .run();
-    let _ = tx.send(server.handle());
     server.await
 }
 
