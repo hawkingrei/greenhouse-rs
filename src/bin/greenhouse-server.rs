@@ -39,5 +39,5 @@ fn main() {
         "using config";
         "config" => serde_json::to_string(&cfg).unwrap(),
     );
-    route::run(cfg)
+    route::run(cfg);
 }
