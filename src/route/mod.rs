@@ -88,14 +88,14 @@ pub async fn run(cfg: Config) {
     thread::spawn(move || {
         let server_future = run_metrics(metric_address.clone());
         rt::System::with_tokio_rt(|| {
-            tokio::runtime::Builder::new_current_thread()
+            tokio::runtime::Builder::new_current_thread().enable_all()
             .build().unwrap()
         }).block_on(server_future)
     });
     thread::spawn(move || {
         let server_future = run_app(tx, &cfg);
         rt::System::with_tokio_rt(|| {
-            tokio::runtime::Builder::new_current_thread()
+            tokio::runtime::Builder::new_current_thread().enable_all()
             .thread_stack_size(1024* 1024 * 1024)
             .build().unwrap()
         }).block_on(server_future)
