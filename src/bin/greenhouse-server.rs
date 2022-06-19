@@ -5,6 +5,7 @@ extern crate slog_global;
 #[macro_use]
 mod util;
 
+use actix_web::rt;
 use crate::util::setup::initial_logger;
 
 use async_std::task;
@@ -39,8 +40,13 @@ fn main() {
         "using config";
         "config" => serde_json::to_string(&cfg).unwrap(),
     );
-
-    task::block_on(async {
+    rt::System::with_tokio_rt(|| {
+            tokio::runtime::Builder::new_current_thread()
+                .enable_all()
+                .thread_stack_size(1024 * 1024 * 1024)
+                .build()
+                .unwrap()
+    }).block_on(async {
         route::run(cfg).await;
     });
 }
