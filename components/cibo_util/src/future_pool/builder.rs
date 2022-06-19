@@ -22,7 +22,6 @@ impl Config {
     }
 }
 
-#[derive(Default)]
 pub struct Builder {
     inner_builder: TokioBuilder,
     name_prefix: Option<String>,
@@ -33,7 +32,7 @@ pub struct Builder {
 impl Builder {
     pub fn new() -> Self {
         Self {
-            inner_builder: TokioBuilder::new(),
+            inner_builder: TokioBuilder::new_multi_thread(),
             name_prefix: None,
             on_tick: None,
             max_tasks: std::usize::MAX,
@@ -51,11 +50,12 @@ impl Builder {
     }
 
     fn enable_all(&mut self) -> &mut Self {
-        self.inner_builder.enable_all().threaded_scheduler();
+        self.inner_builder.enable_all();
         self
     }
+
     pub fn pool_size(&mut self, val: usize) -> &mut Self {
-        self.inner_builder.core_threads(val);
+        self.inner_builder.worker_threads(val);
         self
     }
 

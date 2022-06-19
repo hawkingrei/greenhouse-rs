@@ -13,14 +13,19 @@ mod lazygc;
 mod metrics;
 
 use std::convert::TryInto;
+use std::io::Cursor;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
+use std::io::Write;
 use std::thread;
 
-use async_compression::futures::write::{ZstdDecoder, ZstdEncoder};
-use futures::AsyncWriteExt;
+
 use threadpool::{Priority, ThreadPool};
-use tokio::{fs, fs::File, io, prelude::*};
+use tokio::{fs, fs::File, io};
+use tokio::io::AsyncWriteExt;
+use zstd::Encoder;
+use zstd::stream::write::Decoder;
+
 
 use crate::config::StorageConfig;
 pub use crate::lazygc::Lazygc;
@@ -76,11 +81,13 @@ impl Storage {
         let future_fn = async move || -> io::Result<Vec<u8>> {
             let timer = STORAGE_READ_DURATION_SECONDS_HISTOGRAM_VEC.start_timer();
             let f = fs::read(p).await?;
-            let mut e = ZstdDecoder::new(Vec::new());
-            e.write_all(&f).await?;
-            e.flush().await?;
+            let buffer = Cursor::new(Vec::new());
+            let mut decoder = Decoder::new(buffer).unwrap();
+            decoder.write_all(&f).unwrap();
+            decoder.flush().unwrap();
+            let decoded = decoder.into_inner().into_inner();
             timer.observe_duration();
-            Ok(e.into_inner())
+            Ok(decoded)
         };
         match self.reading_pool.spawn(future_fn(), priority) {
             Ok(middle) => match middle.await {
@@ -113,12 +120,12 @@ impl Storage {
             if fs::metadata(p_parent).await.is_err() {
                 fs::create_dir_all(p_parent).await?;
             }
-            let mut e = ZstdEncoder::new(Vec::new());
-            e.write_all(&data).await?;
-            e.flush().await?;
-            e.close().await?;
+            let buffer = Cursor::new(Vec::new());
+            let mut encoder = Encoder::new(buffer, 1).unwrap();
+            encoder.write_all(&data).unwrap();
+            let encoded = encoder.finish().unwrap().into_inner();
             let mut file = File::create(p).await?;
-            file.write_all(&e.into_inner()).await?;
+            file.write_all(&encoded).await?;
             timer.observe_duration();
             Ok(())
         };

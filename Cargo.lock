@@ -431,22 +431,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "async-compression"
-version = "0.3.14"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "345fd392ab01f746c717b1357165b76f0b67a60192007b234058c9045fdcf695"
-dependencies = [
- "brotli",
- "flate2",
- "futures-core",
- "futures-io",
- "memchr",
- "pin-project-lite 0.2.9",
- "zstd",
- "zstd-safe",
-]
-
-[[package]]
 name = "async-executor"
 version = "1.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2783,7 +2767,6 @@ checksum = "213701ba3370744dcd1a12960caa4843b3d68b4d1c0a5d575e0d65b2ee9d16c0"
 name = "storage"
 version = "0.1.0"
 dependencies = [
- "async-compression",
  "futures",
  "lazy_static 1.4.0",
  "libc",
@@ -2802,6 +2785,7 @@ dependencies = [
  "threadpool 0.1.0",
  "tokio 1.19.2",
  "walkdir",
+ "zstd",
 ]
 
 [[package]]
