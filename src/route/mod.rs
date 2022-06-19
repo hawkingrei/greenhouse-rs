@@ -73,7 +73,7 @@ async fn run_metrics(metric_address: String) -> std::io::Result<()> {
     server.await
 }
 
-pub async fn run(cfg: Config) {
+pub fn run(cfg: Config) {
     let storage_config = cfg.storage.clone();
     let pathbuf = Path::new(&storage_config.cache_dir).to_path_buf();
     let ten_millis = time::Duration::from_secs(2);
