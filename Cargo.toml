@@ -12,7 +12,7 @@ tcmalloc = ["tikv_alloc/tcmalloc"]
 [dependencies]
 awc = "3"
 actix-http = "2"
-actix-rt = "1"
+actix-rt = "2"
 actix-web = "4"
 async-std = "1"
 bytes = "0.4"
