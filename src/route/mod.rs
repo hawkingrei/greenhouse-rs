@@ -40,6 +40,7 @@ async fn run_app(tx: mpsc::Sender<ServerHandle>, cfg: &Config) -> std::io::Resul
     let server = HttpServer::new(move || {
         App::new()
             .wrap(Moni::new())
+            .app_data( web::PayloadConfig::new(1 << 26))
             .app_data(Data::new(Storage::new(storage_config.clone())))
             .service(
                 web::resource("/{tail:.*}")
