@@ -3,32 +3,35 @@ extern crate lazy_static;
 #[macro_use]
 extern crate slog_global;
 
-use std::borrow::Cow;
-use std::convert::TryFrom;
-use std::collections::HashSet;
-use std::{env, fmt::{self, Display as _}};
 use futures_core::ready;
+use std::borrow::Cow;
+use std::collections::HashSet;
+use std::convert::TryFrom;
 use std::future::Future;
 use std::marker::PhantomData;
 use std::pin::Pin;
 use std::rc::Rc;
 use std::task::{Context, Poll};
+use std::{
+    env,
+    fmt::{self, Display as _},
+};
 
 use actix_service::{Service, Transform};
 use actix_utils::future::{ready, Ready};
 use actix_web::dev::{ServiceRequest, ServiceResponse};
 use actix_web::http::Method;
+use actix_web::HttpResponse;
 use actix_web::{
     body::{BodySize, MessageBody},
     error::Error,
 };
- use actix_web::HttpResponse;
-use regex::{Regex, RegexSet};
-use log::{debug, warn};
-use awc::ResponseBody;
 use awc::http::header::HeaderName;
+use awc::ResponseBody;
 use bytes::Bytes;
+use log::{debug, warn};
 use pin_project_lite::pin_project;
+use regex::{Regex, RegexSet};
 use time::{format_description::well_known::Rfc3339, OffsetDateTime};
 
 use crate::metrics::*;
@@ -72,9 +75,9 @@ impl Default for Moni {
 }
 
 impl<S, B> Transform<S, ServiceRequest> for Moni
-    where
-        S: Service<ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
-        B: MessageBody,
+where
+    S: Service<ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
+    B: MessageBody,
 {
     type Response = ServiceResponse<MoniLog<B>>;
     type Error = Error;
@@ -97,7 +100,7 @@ pub struct MoniMiddleware<S> {
 }
 
 impl<S, B> Service<ServiceRequest> for MoniMiddleware<S>
-    where
+where
     S: Service<ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
     B: MessageBody,
 {
@@ -116,7 +119,7 @@ impl<S, B> Service<ServiceRequest> for MoniMiddleware<S>
                 time: OffsetDateTime::now_utc(),
                 format: None,
                 log_target: Cow::Borrowed(""),
-                _phantom: Default::default()
+                _phantom: Default::default(),
             }
         } else {
             let now = OffsetDateTime::now_utc();
@@ -152,9 +155,9 @@ pin_project! {
 }
 
 impl<S, B> Future for MoniResponse<S, B>
-    where
-        B: MessageBody,
-        S: Service<ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
+where
+    B: MessageBody,
+    S: Service<ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
 {
     type Output = Result<ServiceResponse<MoniLog<B>>, Error>;
 
@@ -172,15 +175,13 @@ impl<S, B> Future for MoniResponse<S, B>
             i.status_code = res.status().as_u16();
         }
         let log_target = this.log_target.clone();
-        Poll::Ready(Ok(res.map_body(move |_, body| {
-            MoniLog {
-                body,
-                size: 0,
-                time,
-                info,
-                log_target,
-                format: None
-            }
+        Poll::Ready(Ok(res.map_body(move |_, body| MoniLog {
+            body,
+            size: 0,
+            time,
+            info,
+            log_target,
+            format: None,
         })))
     }
 }
@@ -271,7 +272,6 @@ pub struct Info {
     method: Method,
 }
 
-
 /// A formatting style for the `Logger` consisting of multiple concatenated `FormatText` items.
 #[derive(Debug, Clone)]
 struct Format(Vec<FormatText>);
@@ -310,12 +310,8 @@ impl Format {
                             unreachable!()
                         }
                     }
-                    "i" => {
-                        FormatText::RequestHeader(HeaderName::try_from(key.as_str()).unwrap())
-                    }
-                    "o" => {
-                        FormatText::ResponseHeader(HeaderName::try_from(key.as_str()).unwrap())
-                    }
+                    "i" => FormatText::RequestHeader(HeaderName::try_from(key.as_str()).unwrap()),
+                    "o" => FormatText::ResponseHeader(HeaderName::try_from(key.as_str()).unwrap()),
                     "e" => FormatText::EnvironHeader(key.as_str().to_owned()),
                     "xi" => FormatText::CustomRequest(key.as_str().to_owned(), None),
                     _ => unreachable!(),
@@ -501,9 +497,7 @@ impl FormatText {
 }
 
 /// Converter to get a String from something that writes to a Formatter.
-pub(crate) struct FormatDisplay<'a>(
-    &'a dyn Fn(&mut fmt::Formatter<'_>) -> Result<(), fmt::Error>,
-);
+pub(crate) struct FormatDisplay<'a>(&'a dyn Fn(&mut fmt::Formatter<'_>) -> Result<(), fmt::Error>);
 
 impl<'a> fmt::Display for FormatDisplay<'a> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {

@@ -14,18 +14,16 @@ mod metrics;
 
 use std::convert::TryInto;
 use std::io::Cursor;
+use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
-use std::io::Write;
 use std::thread;
 
-
 use threadpool::{Priority, ThreadPool};
-use tokio::{fs, fs::File, io};
 use tokio::io::AsyncWriteExt;
-use zstd::Encoder;
+use tokio::{fs, fs::File, io};
 use zstd::stream::write::Decoder;
-
+use zstd::Encoder;
 
 use crate::config::StorageConfig;
 pub use crate::lazygc::Lazygc;
