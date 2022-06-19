@@ -90,6 +90,7 @@ pub async fn run(cfg: Config) {
         rt::System::with_tokio_rt(|| {
             tokio::runtime::Builder::new_current_thread()
                 .enable_all()
+                .thread_stack_size(1024 * 1024 * 1024)
                 .build()
                 .unwrap()
         })
@@ -100,6 +101,7 @@ pub async fn run(cfg: Config) {
     rt::System::with_tokio_rt(|| {
         tokio::runtime::Builder::new_current_thread()
             .enable_all()
+            .thread_name("http")
             .thread_stack_size(1024 * 1024 * 1024)
             .build()
             .unwrap()
