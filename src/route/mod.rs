@@ -13,8 +13,8 @@ use actix_web::web::Data;
 use actix_web::{dev::ServerHandle, rt, web, App, HttpServer};
 use moni_middleware::Moni;
 use net2::TcpBuilder;
-use tokio::runtime;
 use storage::{DiskMetric, LazygcServer, Storage};
+use tokio::runtime;
 use tokio::runtime::Runtime;
 
 use crate::config::Config;
@@ -88,18 +88,24 @@ pub async fn run(cfg: Config) {
     thread::spawn(move || {
         let server_future = run_metrics(metric_address.clone());
         rt::System::with_tokio_rt(|| {
-            tokio::runtime::Builder::new_current_thread().enable_all()
-            .build().unwrap()
-        }).block_on(server_future)
+            tokio::runtime::Builder::new_current_thread()
+                .enable_all()
+                .build()
+                .unwrap()
+        })
+        .block_on(server_future)
     });
-    thread::spawn(move || {
-        let server_future = run_app(tx, &cfg);
-        rt::System::with_tokio_rt(|| {
-            tokio::runtime::Builder::new_current_thread().enable_all()
-            .thread_stack_size(1024* 1024 * 1024)
-            .build().unwrap()
-        }).block_on(server_future)
-    });
+
+    let server_future = run_app(tx, &cfg);
+    rt::System::with_tokio_rt(|| {
+        tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .thread_stack_size(1024 * 1024 * 1024)
+            .build()
+            .unwrap()
+    })
+    .block_on(server_future);
+
     let server_handle = rx.recv().unwrap();
     rt::System::new().block_on(server_handle.stop(true));
 }

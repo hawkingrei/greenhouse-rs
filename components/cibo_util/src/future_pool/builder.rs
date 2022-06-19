@@ -43,7 +43,7 @@ impl Builder {
         let mut builder = Self::new();
         builder
             .enable_all()
-            .stack_size(1024*1024*1024)
+            .stack_size(1024 * 1024 * 1024)
             .pool_size(config.workers)
             //.stack_size(config.stack_size)
             .max_tasks(config.workers.saturating_mul(config.max_tasks_per_worker));
