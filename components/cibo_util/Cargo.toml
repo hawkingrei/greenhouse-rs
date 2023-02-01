@@ -35,7 +35,7 @@ tempdir = "0.3"
 tempfile = "3.0"
 tikv_alloc = { path = "../tikv_alloc", default-features = false }
 time = "0.1"
-tokio = { version = "1.13.1", features = ["full"] }
+tokio = { version = "1.20.3", features = ["full"] }
 utime = "0.2"
 
 [dev-dependencies]
