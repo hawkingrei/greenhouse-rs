@@ -31,7 +31,7 @@ dependencies = [
  "log 0.4.17",
  "memchr",
  "pin-project-lite 0.2.9",
- "tokio 1.19.2",
+ "tokio 1.20.4",
  "tokio-util 0.7.3",
 ]
 
@@ -193,7 +193,7 @@ checksum = "7ea16c295198e958ef31930a6ef37d0fb64e9ca3b6116e6b93a8bdae96ee1000"
 dependencies = [
  "actix-macros 0.2.3",
  "futures-core",
- "tokio 1.19.2",
+ "tokio 1.20.4",
 ]
 
 [[package]]
@@ -210,7 +210,7 @@ dependencies = [
  "mio 0.8.3",
  "num_cpus",
  "socket2 0.4.4",
- "tokio 1.19.2",
+ "tokio 1.20.4",
  "tracing",
 ]
 
@@ -585,7 +585,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_urlencoded",
- "tokio 1.19.2",
+ "tokio 1.20.4",
 ]
 
 [[package]]
@@ -832,7 +832,7 @@ dependencies = [
  "tempfile",
  "tikv_alloc",
  "time 0.1.44",
- "tokio 1.19.2",
+ "tokio 1.20.4",
  "utime",
 ]
 
@@ -1128,7 +1128,7 @@ dependencies = [
  "storage",
  "threadpool 0.1.0",
  "tikv_alloc",
- "tokio 1.19.2",
+ "tokio 1.20.4",
  "toml",
 ]
 
@@ -1430,7 +1430,7 @@ dependencies = [
  "http",
  "indexmap",
  "slab",
- "tokio 1.19.2",
+ "tokio 1.20.4",
  "tokio-util 0.7.3",
  "tracing",
 ]
@@ -2783,7 +2783,7 @@ dependencies = [
  "slog-term",
  "slog_derive",
  "threadpool 0.1.0",
- "tokio 1.19.2",
+ "tokio 1.20.4",
  "walkdir",
  "zstd",
 ]
@@ -2929,7 +2929,7 @@ dependencies = [
  "serde",
  "serde_derive",
  "serde_json",
- "tokio 1.19.2",
+ "tokio 1.20.4",
 ]
 
 [[package]]
@@ -3092,16 +3092,16 @@ dependencies = [
 
 [[package]]
 name = "tokio"
-version = "1.19.2"
+version = "1.20.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c51a52ed6686dd62c320f9b89299e9dfb46f730c7a48e635c19f21d116cb1439"
+checksum = "eb78f30e4b41e98ca4cce5acb51168a033839a7af9e42b380355808e14e98ee0"
 dependencies = [
+ "autocfg",
  "bytes 1.1.0",
  "libc",
  "memchr",
  "mio 0.8.3",
  "num_cpus",
- "once_cell",
  "parking_lot 0.12.1",
  "pin-project-lite 0.2.9",
  "signal-hook-registry",
@@ -3145,7 +3145,7 @@ dependencies = [
  "futures-core",
  "futures-sink",
  "pin-project-lite 0.2.9",
- "tokio 1.19.2",
+ "tokio 1.20.4",
  "tracing",
 ]
 
