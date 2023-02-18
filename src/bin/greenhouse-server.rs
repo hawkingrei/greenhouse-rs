@@ -7,7 +7,7 @@ mod util;
 
 use crate::util::setup::initial_logger;
 
-use async_std::task;
+
 use cibo_util;
 use clap::{App, Arg};
 use greenhouse::config::Config;

@@ -14,8 +14,8 @@ use actix_web::{dev::ServerHandle, rt, web, App, HttpServer};
 use moni_middleware::Moni;
 use net2::TcpBuilder;
 use storage::{DiskMetric, LazygcServer, Storage};
-use tokio::runtime;
-use tokio::runtime::Runtime;
+
+
 
 use crate::config::Config;
 use crate::route::metric::metric;
@@ -31,7 +31,7 @@ fn unused_addr(address: String) -> net::SocketAddr {
     tcp.local_addr().unwrap()
 }
 
-async fn run_app(tx: mpsc::Sender<ServerHandle>, cfg: &Config) -> std::io::Result<()> {
+async fn run_app(_tx: mpsc::Sender<ServerHandle>, cfg: &Config) -> std::io::Result<()> {
     info!("listen to {}", &cfg.http_service.addr);
     let storage_config = cfg.storage.clone();
 
