@@ -34,7 +34,7 @@ slog_derive = "0.1"
 tempdir = "0.3"
 tempfile = "3.0"
 tikv_alloc = { path = "../tikv_alloc", default-features = false }
-time = "0.1"
+time = "0.3"
 tokio = { version = "1.20.4", features = ["full"] }
 utime = "0.2"
 
